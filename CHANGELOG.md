@@ -1,5 +1,33 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 ## [Unreleased]
 
 ## [0.1.0] - 2026-06-01
 
-- Initial release
+### Added
+
+- Initial project structure with gemspec, RSpec and RuboCop setup (`71be639`)
+- `OpenapiBlocks::Configuration` with DSL for `info`, `servers` and `openapi_version` (3.0 / 3.1)
+- `OpenapiBlocks::Cache` thread-safe in-memory cache with `Mutex`
+- `OpenapiBlocks::FileWatcher` monitoring `app/openapi`, `app/models`, `config/routes.rb` and `db/schema.rb`
+- `OpenapiBlocks::Middleware` with automatic cache invalidation on file changes
+- `OpenapiBlocks::Railtie` for automatic middleware injection and eager loading of `app/openapi` (`28d9cab`)
+- `OpenapiBlocks::Schema::Extractor` for automatic schema generation from ActiveRecord columns
+- `OpenapiBlocks::Schema::Validator` for mapping ActiveModel validations to OpenAPI restrictions (`minLength`, `maxLength`, `minimum`, `maximum`, `enum`, `pattern`, `format`)
+- `OpenapiBlocks::Schema::Types` mapping ActiveRecord types to OpenAPI types (`1256d31`)
+- `OpenapiBlocks::Routing::Operation` and `OpenapiBlocks::Routing::Extractor` for automatic path generation from Rails routes
+- `OpenapiBlocks::Spec::Document`, `OpenapiBlocks::Spec::Paths` and `OpenapiBlocks::Spec::Components` for OpenAPI document assembly
+- `OpenapiBlocks::Builder` for orchestrating spec generation (`db5910a`)
+- `OpenapiBlocks::Engine` mountable in `config/routes.rb` exposing `/openapi.json` and `/openapi.yaml`
+- `OpenapiBlocks::SpecController` replacing previous implementation (`cbacd18`)
+- Automatic `UserInput` schema generation for `POST`, `PUT` and `PATCH` request bodies
+- Validation merging into schema properties
+- Automatic filtering of internal Rails routes (`rails/`, `action_mailbox/`, `active_storage/`) (`35737ab`)
+
+[Unreleased]: https://github.com/evotechbuilder/openapi_blocks/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/evotechbuilder/openapi_blocks/releases/tag/v0.1.0
