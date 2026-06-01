@@ -20,6 +20,7 @@ require_relative "openapi_blocks/builder"
 require_relative "openapi_blocks/base"
 require_relative "openapi_blocks/engine"
 require_relative "openapi_blocks/railtie"
+require_relative "openapi_blocks/operation_builder"
 
 module OpenapiBlocks # rubocop:disable Style/Documentation
   class Error < StandardError; end

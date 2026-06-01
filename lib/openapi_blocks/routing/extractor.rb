@@ -4,7 +4,7 @@ require_relative "operation"
 
 module OpenapiBlocks
   module Routing
-    class Extractor # rubocop:disable Style/Documentation
+    class Extractor # rubocop:disable Style/Documentation,Metrics/ClassLength
       IGNORED_CONTROLLERS = %w[
         rails/
         action_mailbox/
@@ -44,16 +44,19 @@ module OpenapiBlocks
         end
       end
 
-      def build_operation(operation)
+      def build_operation(operation) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+        meta = operation_meta(operation)
+
         op = {
           tags:        [operation.schema_name],
-          summary:     build_summary(operation),
+          summary:     meta&._summary || build_summary(operation),
           operationId: build_operation_id(operation),
-          responses:   build_responses(operation)
+          responses:   meta&._responses ? build_custom_responses(meta) : build_default_responses(operation)
         }
 
-        op[:parameters]  = build_path_parameters(operation) if operation.path_parameters.any?
-        op[:requestBody] = build_request_body(operation)    if operation.has_body
+        op[:description] = meta._description if meta&._description
+        op[:parameters]  = build_parameters(operation, meta) if build_parameters(operation, meta).any?
+        op[:requestBody] = build_request_body(operation)     if operation.has_body
 
         op
       end
@@ -66,7 +69,36 @@ module OpenapiBlocks
         "#{operation.action}#{operation.schema_name}"
       end
 
-      def build_responses(operation) # rubocop:disable Metrics/MethodLength
+      def build_parameters(operation, meta)
+        params = build_path_parameters(operation)
+        params += build_query_parameters(meta) if meta&._parameters
+        params
+      end
+
+      def build_path_parameters(operation)
+        operation.path_parameters.map do |param|
+          {
+            name:     param,
+            in:       "path",
+            required: true,
+            schema:   { type: "string" }
+          }
+        end
+      end
+
+      def build_query_parameters(meta)
+        meta._parameters.map do |param|
+          {
+            name:        param[:name],
+            in:          param[:in].to_s,
+            required:    param[:required] || false,
+            description: param[:description],
+            schema:      { type: param[:type].to_s }
+          }.compact
+        end
+      end
+
+      def build_default_responses(operation) # rubocop:disable Metrics/MethodLength
         status = operation.action == "create" ? "201" : "200"
         ref    = { "$ref" => "#/components/schemas/#{operation.schema_name}" }
 
@@ -87,14 +119,32 @@ module OpenapiBlocks
         responses
       end
 
-      def build_path_parameters(operation)
-        operation.path_parameters.map do |param|
-          {
-            name:     param,
-            in:       "path",
-            required: true,
-            schema:   { type: "string" }
+      def build_custom_responses(meta)
+        meta._responses.each_with_object({}) do |(status, response), hash|
+          hash[status.to_s] = build_response_object(response)
+        end
+      end
+
+      def build_response_object(response)
+        obj = { description: response[:description] }
+        return obj unless response[:schema]
+
+        obj[:content] = {
+          "application/json" => {
+            schema: resolve_schema(response[:schema])
           }
+        }
+        obj
+      end
+
+      def resolve_schema(schema)
+        case schema
+        in { type: :array, items: Symbol => ref }
+          { type: "array", items: { "$ref" => "#/components/schemas/#{ref}" } }
+        in Symbol => ref
+          { "$ref" => "#/components/schemas/#{ref}" }
+        else
+          schema
         end
       end
 
@@ -107,6 +157,19 @@ module OpenapiBlocks
             "application/json" => { schema: ref }
           }
         }
+      end
+
+      def operation_meta(operation)
+        openapi_class = find_openapi_class(operation)
+        openapi_class&._operations&.dig(operation.action.to_sym)
+      end
+
+      def find_openapi_class(operation)
+        openapi_name = "#{operation.schema_name}Openapi"
+
+        ObjectSpace.each_object(Class).find do |klass|
+          klass < OpenapiBlocks::Base && klass.name == openapi_name
+        end
       end
     end
   end
