@@ -34,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `response` DSL for custom responses with `description:` and `schema:` options
 - Schema resolution supporting `Symbol` (`schema: :User`) and array (`schema: { type: :array, items: :User }`) references
 - Fallback to auto-generated responses when no custom `operation` block is defined (`0055aa3`)
+- RSpec coverage for `Schema::Types`, `Schema::Validator`, `Schema::Extractor`, `Routing::Extractor`, `Spec::Components` and `Configuration`
+- Validation for `openapi_version` — raises `ArgumentError` for unsupported versions
+- `read_only: true` virtual attributes excluded from `UserInput` schema
 
 [Unreleased]: https://github.com/evotechbuilder/openapi_blocks/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/evotechbuilder/openapi_blocks/releases/tag/v0.1.0
