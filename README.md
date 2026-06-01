@@ -1,43 +1,210 @@
-# OpenapiBlocks
 
-TODO: Delete this and the text below, and describe your gem
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/openapi_blocks`. To experiment with that code, run `bin/console` for an interactive prompt.
+OpenapiBlocks is a Rails gem that automatically generates OpenAPI 3.0/3.1 documentation from your ActiveRecord models, ActiveModel validations, and Rails routes — inspired by [ActiveModel::Serializer](https://github.com/rails-api/active_model_serializers).
+
+Versão em português brasileiro: [README.pt-BR.md](README.pt-BR.md)
+
+No manual annotation. No DSL noise in your controllers. Just declare what to expose and the spec is generated automatically.
+
+---
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Add to your `Gemfile`:
 
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+```ruby
+gem "openapi_blocks"
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+Then run:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+bundle install
 ```
+
+---
+
+## Setup
+
+### 1. Mount the Engine
+
+```ruby
+config/routes.rb
+````
+
+Rails.application.routes.draw do
+mount OpenapiBlocks::Engine => "/docs"resources :users
+end
+
+This exposes:
+<br />
+GET /docs/openapi.json
+<br />
+GET /docs/openapi.yaml
+
+### 2. Configure the initializer
+
+```ruby
+# config/initializers/openapi_blocks.rb
+
+OpenapiBlocks.configure do |config|
+    config.openapi_version = "3.1"  # "3.0" or "3.1"
+    config.info do
+        title       "My API"
+        version     "1.0.0"
+        description "API documentation generated automatically"
+        contact do
+            name  "My Team"
+            email "api@mycompany.com"
+            url   "https://mycompany.com"
+        end
+        license do
+            name "MIT"
+            url  "https://opensource.org/licenses/MIT"
+        end
+    end
+    config.servers do
+        server do
+            url         "https://api.mycompany.com"
+            description "Production"
+        end
+        server do
+            url         "http://localhost:3000"
+            description "Development"
+        end
+    end
+    config.watch = :development  # auto-reload on file changes
+end
+```
+
+---
 
 ## Usage
 
-TODO: Write usage instructions here
+### Creating an OpenAPI class
 
-## Development
+Create a file in `app/openapi/` following the same naming convention as ActiveModel::Serializer:app/
+openapi/
+user_openapi.rb     →  User model
+post_openapi.rb     →  Post model
+order_openapi.rb    →  Order model
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+```ruby
+# app/openapi/user_openapi.rb
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+class UserOpenapi < OpenapiBlocks::Base
+    # model User is inferred automatically from the class nameopt-out sensitive or unnecessary fields
+    ignore :password_digest, :reset_password_token
+    
+    #opt-in associations
+    association :company
+    association :posts, type: :array
+    
+    #virtual attributes (not in the database)
+    attribute :full_name,  type: :string
+    attribute :token,      type: :string, read_only: true
+end
+```
 
-## Contributing
+### What is generated automatically
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/openapi_blocks. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/openapi_blocks/blob/main/CODE_OF_CONDUCT.md).
+Given this model:
+
+```ruby
+class User < ApplicationRecord
+    validates :name,  presence: true, length: { minimum: 2, maximum: 100 }
+    validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+    validates :age,   numericality: { greater_than: 0 }
+    validates :role,  inclusion: { in: %w[admin user guest] }
+end
+```
+
+OpenapiBlocks generates:
+
+- `User` schema from `db/schema.rb` columns and types
+- `UserInput` schema for `POST`, `PUT` and `PATCH` request bodies (without `id`, `created_at`, `updated_at`)
+- `required` fields from `presence: true` validations
+- `minLength`, `maxLength` from `length` validations
+- `minimum`, `maximum` from `numericality` validations
+- `enum` from `inclusion` validations
+- `format: "email"` from format validations
+- All paths from `config/routes.rb`
+
+### Customizing operations
+
+```ruby
+# app/openapi/user_openapi.rb
+class UserOpenapi < OpenapiBlocks::Base
+    operation :index do
+        summary     "List all users"
+        description "Returns a paginated list of active users"
+        parameter :page,     in: :query, type: :integer, description: "Page number"
+        parameter :per_page, in: :query, type: :integer, description: "Items per page"
+        response 200, description: "List of users",  schema: { type: :array, items: :User }
+        response 401, description: "Unauthorized"
+    end
+
+    operation :show do
+        summary "Get a user"response 200, description: "User found",     schema: :User
+        response 404, description: "User not found"
+    end
+
+    operation :create do
+        summary "Create a user"response 201, description: "User created",   schema: :User
+        response 422, description: "Invalid data"
+    end
+    
+    operation :update do
+        summary "Update a user"response 200, description: "User updated",   schema: :User
+        response 404, description: "User not found"
+        response 422, description: "Invalid data"
+    end
+
+    operation :destroy do
+        summary "Delete a user"response 200, description: "User deleted"
+        response 404, description: "User not found"
+    end
+end
+```
+
+---
+
+## Type Mapping
+
+| ActiveRecord type | OpenAPI type         |
+|-------------------|----------------------|
+| `integer`         | `integer` / `int32`  |
+| `bigint`          | `integer` / `int64`  |
+| `float`           | `number` / `float`   |
+| `decimal`         | `number` / `double`  |
+| `string`          | `string`             |
+| `text`            | `string`             |
+| `boolean`         | `boolean`            |
+| `date`            | `string` / `date`    |
+| `datetime`        | `string` / `date-time` |
+| `uuid`            | `string` / `uuid`    |
+| `json` / `jsonb`  | `object`             |
+
+---
+
+## Auto-reload in Development
+
+OpenapiBlocks watches for changes in:app/openapi//*.rb
+app/models//*.rb
+config/routes.rb
+db/schema.rb
+
+The spec is automatically regenerated on the next request to `/docs/openapi.json` whenever any of these files change. No server restart needed.
+
+---
+
+## Requirements
+
+- Ruby >= 3.2
+- Rails >= 7.0
+
+---
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the OpenapiBlocks project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/openapi_blocks/blob/main/CODE_OF_CONDUCT.md).
+[MIT](LICENSE.txt)
