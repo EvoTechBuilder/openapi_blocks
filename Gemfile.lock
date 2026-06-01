@@ -233,8 +233,9 @@ GEM
       prism (~> 1.7)
     ruby-progressbar (1.13.0)
     securerandom (0.4.1)
-    sqlite3 (1.7.3)
+    sqlite3 (2.9.4)
       mini_portile2 (~> 2.8.0)
+    sqlite3 (2.9.4-arm64-darwin)
     stringio (3.2.0)
     thor (1.5.0)
     timeout (0.6.1)
@@ -257,13 +258,17 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  actionpack (>= 7.0)
+  activemodel (>= 7.0)
+  activerecord (>= 7.0)
   irb
   openapi_blocks!
+  railties (>= 7.0)
   rake (~> 13.0)
   rspec (~> 3.0)
   rspec-rails (~> 6.0)
   rubocop (~> 1.21)
-  sqlite3 (~> 1.4)
+  sqlite3 (~> 2.1)
 
 CHECKSUMS
   action_text-trix (2.1.19) sha256=7012f59421009cf284aa651294896414d653a61a2417c9b8714c8476d2f74009
@@ -342,7 +347,8 @@ CHECKSUMS
   rubocop-ast (1.49.1) sha256=4412f3ee70f6fe4546cc489548e0f6fcf76cafcfa80fa03af67098ffed755035
   ruby-progressbar (1.13.0) sha256=80fc9c47a9b640d6834e0dc7b3c94c9df37f08cb072b7761e4a71e22cff29b33
   securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1
-  sqlite3 (1.7.3) sha256=fa77f63c709548f46d4e9b6bb45cda52aa3881aa12cc85991132758e8968701c
+  sqlite3 (2.9.4) sha256=6161c5b9c17886b289558e6c8082b28a22a814736d2433c9a67f4c6bfcde5c97
+  sqlite3 (2.9.4-arm64-darwin) sha256=1d5aad413a815d236e96d43f05a1acc600b6cd086800770342a3f9c2877499ff
   stringio (3.2.0) sha256=c37cb2e58b4ffbd33fe5cd948c05934af997b36e0b6ca6fdf43afa234cf222e1
   thor (1.5.0) sha256=e3a9e55fe857e44859ce104a84675ab6e8cd59c650a49106a05f55f136425e73
   timeout (0.6.1) sha256=78f57368a7e7bbadec56971f78a3f5ecbcfb59b7fcbb0a3ed6ddc08a5094accb

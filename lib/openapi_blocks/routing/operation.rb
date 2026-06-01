@@ -26,7 +26,7 @@ module OpenapiBlocks
       end
 
       def path_parameters
-        @path.scan(/:(\w+)/).flatten
+        @path.scan(/\{(\w+)\}/).flatten
       end
 
       def schema_name

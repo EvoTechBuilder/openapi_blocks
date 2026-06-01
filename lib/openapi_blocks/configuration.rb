@@ -6,13 +6,25 @@ require_relative "configuration/servers_builder"
 
 module OpenapiBlocks
   class Configuration # rubocop:disable Style/Documentation
-    attr_accessor :openapi_version, :watch
+    SUPPORTED_VERSIONS = %w[3.0 3.1].freeze
+
+    attr_reader   :openapi_version
+    attr_accessor :watch
 
     def initialize
       @openapi_version = "3.1"
       @watch           = :development
       @info            = InfoBuilder.new
       @servers         = []
+    end
+
+    def openapi_version=(version)
+      unless SUPPORTED_VERSIONS.include?(version.to_s)
+        raise ArgumentError,
+              "Unsupported OpenAPI version: #{version.inspect}. Supported versions: #{SUPPORTED_VERSIONS.join(', ')}"
+      end
+
+      @openapi_version = version.to_s
     end
 
     def info(&block)

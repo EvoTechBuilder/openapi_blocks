@@ -73,10 +73,12 @@ module OpenapiBlocks
 
         regexp = options[:with]
 
-        case regexp
-        when URI::MailTo::EMAIL_REGEXP then { format: "email" }
-        when /url|uri/i                then { format: "uri" }
-        else { pattern: regexp.source }
+        if regexp.source == URI::MailTo::EMAIL_REGEXP.source
+          { format: "email" }
+        elsif regexp.source =~ /url|uri/i
+          { format: "uri" }
+        else
+          { pattern: regexp.source }
         end
       end
     end

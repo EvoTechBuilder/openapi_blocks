@@ -32,6 +32,10 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rails", ">= 7.0"
 
-  spec.add_development_dependency "rspec-rails", "~> 6.0" # rubocop:disable Gemspec/DevelopmentDependencies
-  spec.add_development_dependency "sqlite3",     "~> 1.4" # rubocop:disable Gemspec/DevelopmentDependencies
+  spec.add_development_dependency "actionpack",   ">= 7.0" # rubocop:disable Gemspec/DevelopmentDependencies
+  spec.add_development_dependency "activemodel",  ">= 7.0" # rubocop:disable Gemspec/DevelopmentDependencies
+  spec.add_development_dependency "activerecord", ">= 7.0" # rubocop:disable Gemspec/DevelopmentDependencies
+  spec.add_development_dependency "railties", ">= 7.0" # rubocop:disable Gemspec/DevelopmentDependencies
+  spec.add_development_dependency "rspec-rails",  "~> 6.0" # rubocop:disable Gemspec/DevelopmentDependencies
+  spec.add_development_dependency "sqlite3",      "~> 2.1" # rubocop:disable Gemspec/DevelopmentDependencies
 end
