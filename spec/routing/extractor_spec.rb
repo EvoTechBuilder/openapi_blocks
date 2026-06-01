@@ -1,5 +1,27 @@
 # frozen_string_literal: true
 
+RSpec.describe OpenapiBlocks::Routing::Extractor do
+  describe "#resolve_schema" do
+    subject(:extractor) { described_class.allocate }
+
+    it "classifies symbol refs" do
+      result = extractor.send(:resolve_schema, :user)
+
+      expect(result).to eq("$ref" => "#/components/schemas/User")
+    end
+
+    it "classifies array item refs" do
+      result = extractor.send(:resolve_schema, { type: :array, items: :user })
+
+      expect(result).to eq(
+        type:  "array",
+        items: { "$ref" => "#/components/schemas/User" }
+      )
+    end
+  end
+end
+# frozen_string_literal: true
+
 require "spec_helper"
 
 RSpec.describe OpenapiBlocks::Routing::Extractor do # rubocop:disable Metrics/BlockLength

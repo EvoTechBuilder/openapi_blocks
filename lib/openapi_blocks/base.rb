@@ -14,9 +14,9 @@ module OpenapiBlocks
         @_ignored.concat(attributes.map(&:to_s))
       end
 
-      def association(name, type: nil)
+      def association(name, type: nil, input: true)
         @_associations ||= []
-        @_associations << { name: name, type: type }
+        @_associations << { name: name, type: type, input: input }
       end
 
       def attribute(name, **)

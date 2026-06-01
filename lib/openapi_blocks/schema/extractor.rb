@@ -63,9 +63,13 @@ module OpenapiBlocks
         Array(@openapi_class._associations).each_with_object({}) do |assoc, hash|
           name      = assoc[:name]
           type      = assoc[:type]
+          input     = assoc.fetch(:input, true)
           ref       = { "$ref" => "#/components/schemas/#{name.to_s.classify}" }
 
-          hash[name.to_s] = type == :array ? { type: "array", items: ref } : ref
+          schema = type == :array ? { type: "array", items: ref } : ref
+          schema[:readOnly] = true unless input
+
+          hash[name.to_s] = schema
         end
       end
 

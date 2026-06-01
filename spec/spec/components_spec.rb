@@ -90,5 +90,33 @@ RSpec.describe OpenapiBlocks::Spec::Components do # rubocop:disable Metrics/Bloc
         expect(properties).to have_key("nickname")
       end
     end
+
+    context "with associations" do
+      before { openapi_class.association :company }
+
+      it "includes company in User schema" do
+        properties = components.build[:schemas]["ComponentUser"][:properties]
+        expect(properties).to have_key("company")
+      end
+
+      it "includes company in UserInput schema by default" do
+        properties = components.build[:schemas]["ComponentUserInput"][:properties]
+        expect(properties).to have_key("company")
+      end
+    end
+
+    context "with associations excluded from input" do
+      before { openapi_class.association :posts, type: :array, input: false }
+
+      it "includes posts in User schema" do
+        properties = components.build[:schemas]["ComponentUser"][:properties]
+        expect(properties).to have_key("posts")
+      end
+
+      it "excludes posts from UserInput schema" do
+        properties = components.build[:schemas]["ComponentUserInput"][:properties]
+        expect(properties).not_to have_key("posts")
+      end
+    end
   end
 end

@@ -142,9 +142,9 @@ module OpenapiBlocks
       def resolve_schema(schema)
         case schema
         in { type: :array, items: Symbol => ref }
-          { type: "array", items: { "$ref" => "#/components/schemas/#{ref}" } }
+          { type: "array", items: { "$ref" => "#/components/schemas/#{ref.to_s.classify}" } }
         in Symbol => ref
-          { "$ref" => "#/components/schemas/#{ref}" }
+          { "$ref" => "#/components/schemas/#{ref.to_s.classify}" }
         else
           schema
         end

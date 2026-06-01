@@ -28,7 +28,10 @@ RSpec.describe OpenapiBlocks::Base do # rubocop:disable Metrics/BlockLength
     expect(DummyOpenapi._ignored).to include("a", "b")
 
     DummyOpenapi.association :company, type: :object
-    expect(DummyOpenapi._associations).to include({ name: :company, type: :object })
+    expect(DummyOpenapi._associations).to include({ name: :company, type: :object, input: true })
+
+    DummyOpenapi.association :profile, input: false
+    expect(DummyOpenapi._associations).to include({ name: :profile, type: nil, input: false })
 
     DummyOpenapi.attribute :token, type: :string, read_only: true
     expect(DummyOpenapi._virtual_attributes.map { |v| v[:name] }).to include(:token)

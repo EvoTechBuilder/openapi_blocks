@@ -26,14 +26,14 @@ RSpec.describe OpenapiBlocks::Configuration do # rubocop:disable Metrics/BlockLe
   end
 
   describe "#openapi_version=" do
-    it "accepts 3.0" do
-      config.openapi_version = "3.0"
-      expect(config.openapi_version).to eq("3.0")
+    it "accepts 3.0.3" do
+      config.openapi_version = "3.0.3"
+      expect(config.openapi_version).to eq("3.0.3")
     end
 
-    it "accepts 3.1" do
-      config.openapi_version = "3.1"
-      expect(config.openapi_version).to eq("3.1")
+    it "accepts 3.1.1" do
+      config.openapi_version = "3.1.1"
+      expect(config.openapi_version).to eq("3.1.1")
     end
 
     it "raises ArgumentError for unsupported versions" do
