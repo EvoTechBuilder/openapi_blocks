@@ -22,7 +22,7 @@ module OpenapiBlocks
           schema[:properties] = merge_validations(schema[:properties], validator.extract)
 
           hash[schema_name]            = schema
-          hash["#{schema_name}Input"]  = build_input(schema)
+          hash["#{schema_name}Input"]  = build_input(schema, klass)
         end
 
         { schemas: schemas }
@@ -30,9 +30,14 @@ module OpenapiBlocks
 
       private
 
-      def build_input(schema)
+      def build_input(schema, openapi_class) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+        read_only_virtuals = Array(openapi_class._virtual_attributes)
+                             .select { |attr| attr[:read_only] }
+                             .map { |attr| attr[:name].to_s }
+
         input_properties = schema[:properties].reject do |name, _|
-          INPUT_IGNORED_PROPERTIES.include?(name.to_s)
+          INPUT_IGNORED_PROPERTIES.include?(name.to_s) ||
+            read_only_virtuals.include?(name.to_s)
         end
 
         {

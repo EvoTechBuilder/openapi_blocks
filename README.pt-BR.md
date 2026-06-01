@@ -132,12 +132,28 @@ OpenapiBlocks gera:
 
 - `User` schema a partir das colunas e tipos de `db/schema.rb`
 - `UserInput` schema para bodies de request de `POST`, `PUT` e `PATCH` (sem `id`, `created_at`, `updated_at`)
+- `UserInput` schema para bodies de request de `POST`, `PUT` e `PATCH` (sem `id`, `created_at`, `updated_at` e atributos virtuais marcados como `read_only`)
 - campos `required` a partir de validações `presence: true`
 - `minLength` e `maxLength` a partir de validações `length`
 - `minimum` e `maximum` a partir de validações `numericality`
 - `enum` a partir de validações `inclusion`
 - `format: "email"` a partir de validações de formato
 - todos os paths a partir de `config/routes.rb`
+
+### Atributos Virtuais
+
+Atributos virtuais são campos que existem apenas na resposta da API e não no banco de dados.
+
+| Opção           | Descrição                            | Aparece em User | Aparece em UserInput |
+| ---------------- | -------------------------------------- | :-------------: | :------------------: |
+| read_only: true  | Campos calculados ou gerados pelo sistema |       SIM       |          NÃO          |
+| read_only: false | Campos que o cliente pode enviar e receber |       SIM       |         SIM          |
+
+```ruby
+attribute :full_name,    type: :string, read_only: true   # apenas resposta
+attribute :access_token, type: :string, read_only: true   # apenas resposta
+attribute :nickname,     type: :string                    # request e response
+```
 
 ### Customizando operações
 
@@ -205,8 +221,8 @@ end
 OpenapiBlocks observa mudanças em:
 
 ```text
-app/openapi/*.rb
-app/models/*.rb
+app/openapi/**/*.rb
+app/models/**/*.rb
 config/routes.rb
 db/schema.rb
 ```
