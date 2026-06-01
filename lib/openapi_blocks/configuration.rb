@@ -1,4 +1,3 @@
-# lib/openapi_blocks/configuration.rb
 # frozen_string_literal: true
 
 require_relative "configuration/info_builder"
@@ -7,13 +6,13 @@ require_relative "configuration/security_builder"
 
 module OpenapiBlocks
   class Configuration # rubocop:disable Style/Documentation
-    SUPPORTED_VERSIONS = %w[3.1.1 3.0.3].freeze
+    SUPPORTED_VERSIONS = %w[3.1.0 3.0.3].freeze
 
     attr_reader   :openapi_version
     attr_accessor :watch
 
     def initialize
-      @openapi_version = "3.1"
+      @openapi_version = "3.1.0"
       @watch           = :development
       @info            = InfoBuilder.new
       @servers         = []
