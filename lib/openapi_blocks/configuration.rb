@@ -3,10 +3,11 @@
 
 require_relative "configuration/info_builder"
 require_relative "configuration/servers_builder"
+require_relative "configuration/security_builder"
 
 module OpenapiBlocks
   class Configuration # rubocop:disable Style/Documentation
-    SUPPORTED_VERSIONS = %w[3.0 3.1].freeze
+    SUPPORTED_VERSIONS = %w[3.1.1 3.0.3].freeze
 
     attr_reader   :openapi_version
     attr_accessor :watch
@@ -16,6 +17,7 @@ module OpenapiBlocks
       @watch           = :development
       @info            = InfoBuilder.new
       @servers         = []
+      @security        = nil
     end
 
     def openapi_version=(version)
@@ -36,6 +38,12 @@ module OpenapiBlocks
       builder = ServersBuilder.new
       builder.instance_eval(&block) if block
       @servers = builder.servers
+    end
+
+    def security(&block)
+      @security ||= SecurityBuilder.new
+      @security.instance_eval(&block) if block
+      @security
     end
 
     def to_h

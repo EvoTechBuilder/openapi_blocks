@@ -2,7 +2,7 @@
 
 module OpenapiBlocks
   class OperationBuilder # rubocop:disable Style/Documentation
-    attr_reader :_summary, :_description, :_parameters, :_responses
+    attr_reader :_summary, :_description, :_parameters, :_responses, :_security
 
     def summary(value = nil)
       value ? @_summary = value : @_summary
@@ -31,12 +31,21 @@ module OpenapiBlocks
       }.compact
     end
 
+    def security(*schemes)
+      @_security = schemes.map { |s| { s => [] } }
+    end
+
+    def no_security!
+      @_security = []
+    end
+
     def to_h
       {
         summary:     @_summary,
         description: @_description,
         parameters:  @_parameters,
-        responses:   @_responses
+        responses:   @_responses,
+        security:    @_security
       }.compact
     end
   end

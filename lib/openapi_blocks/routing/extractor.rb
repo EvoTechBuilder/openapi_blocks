@@ -44,7 +44,7 @@ module OpenapiBlocks
         end
       end
 
-      def build_operation(operation) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+      def build_operation(operation) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength,Metrics/CyclomaticComplexity
         meta = operation_meta(operation)
         parameters = build_parameters(operation, meta)
 
@@ -58,6 +58,7 @@ module OpenapiBlocks
         op[:description] = meta._description if meta&._description
         op[:parameters]  = parameters        if parameters.any?
         op[:requestBody] = build_request_body(operation) if operation.has_body
+        op[:security]    = meta._security if meta&._security
 
         op
       end
