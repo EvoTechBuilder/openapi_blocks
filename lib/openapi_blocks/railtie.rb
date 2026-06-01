@@ -8,8 +8,12 @@ module OpenapiBlocks
       app.middleware.use OpenapiBlocks::Middleware
     end
 
-    initializer "openapi_blocks.autoload" do |app|
-      app.config.eager_load_paths << Rails.root.join("app/openapi")
+    initializer "openapi_blocks.autoload", before: :set_autoload_paths do |app|
+      app.config.eager_load_paths << app.root.join("app/openapi")
+    end
+
+    config.to_prepare do
+      Dir[Rails.root.join("app/openapi/**/*.rb")].each { |f| require f }
     end
   end
 end

@@ -5,6 +5,13 @@ require_relative "operation"
 module OpenapiBlocks
   module Routing
     class Extractor # rubocop:disable Style/Documentation
+      IGNORED_CONTROLLERS = %w[
+        rails/
+        action_mailbox/
+        active_storage/
+        openapi_blocks/
+      ].freeze
+
       def initialize(app = Rails.application)
         @app = app
       end
@@ -24,17 +31,17 @@ module OpenapiBlocks
       private
 
       def routes
-        @app.routes.routes.map do |route|
+        @app.routes.routes.filter_map do |route|
           defaults = route.defaults
-
           next unless defaults[:controller] && defaults[:action]
+          next if IGNORED_CONTROLLERS.any? { |c| defaults[:controller].start_with?(c) }
 
           Operation.new(
             controller: defaults[:controller],
             action:     defaults[:action],
             path:       route.path.spec.to_s
           )
-        end.compact
+        end
       end
 
       def build_operation(operation)
