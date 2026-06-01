@@ -6,26 +6,48 @@ require_relative "../schema/validator"
 module OpenapiBlocks
   module Spec
     class Components # rubocop:disable Style/Documentation
+      INPUT_IGNORED_PROPERTIES = %w[id created_at updated_at deleted_at].freeze
+
       def initialize(openapi_classes)
         @openapi_classes = openapi_classes
       end
 
-      def build
+      def build # rubocop:disable Metrics/AbcSize
         schemas = @openapi_classes.each_with_object({}) do |klass, hash|
           schema_name = klass.model.name
           extractor   = Schema::Extractor.new(klass)
           validator   = Schema::Validator.new(klass.model)
 
-          schema = extractor.extract
+          schema              = extractor.extract
           schema[:properties] = merge_validations(schema[:properties], validator.extract)
 
-          hash[schema_name] = schema
+          hash[schema_name]            = schema
+          hash["#{schema_name}Input"]  = build_input(schema)
         end
 
         { schemas: schemas }
       end
 
       private
+
+      def build_input(schema)
+        input_properties = schema[:properties].reject do |name, _|
+          INPUT_IGNORED_PROPERTIES.include?(name.to_s)
+        end
+
+        {
+          type:       "object",
+          required:   filter_required(schema[:required], input_properties),
+          properties: input_properties
+        }.compact
+      end
+
+      def filter_required(required, input_properties)
+        return nil if required.blank?
+
+        filtered = required.select { |r| input_properties.key?(r) || input_properties.key?(r.to_sym) }
+        filtered.empty? ? nil : filtered
+      end
 
       def merge_validations(properties, validations)
         return properties if properties.blank?
