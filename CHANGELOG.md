@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic `UserInput` schema generation for `POST`, `PUT` and `PATCH` request bodies
 - Validation merging into schema properties
 - Automatic filtering of internal Rails routes (`rails/`, `action_mailbox/`, `active_storage/`) (`35737ab`)
+- `OpenapiBlocks::OperationBuilder` DSL for customizing operations per action (`operation :index`, `:show`, `:create`, `:update`, `:destroy`)
+- `summary` and `description` customization per operation
+- `parameter` DSL for query parameters with `in:`, `type:`, `description:` and `required:` options
+- `response` DSL for custom responses with `description:` and `schema:` options
+- Schema resolution supporting `Symbol` (`schema: :User`) and array (`schema: { type: :array, items: :User }`) references
+- Fallback to auto-generated responses when no custom `operation` block is defined (`0055aa3`)
 
 [Unreleased]: https://github.com/evotechbuilder/openapi_blocks/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/evotechbuilder/openapi_blocks/releases/tag/v0.1.0
