@@ -88,7 +88,7 @@ RSpec.describe OpenapiBlocks::Schema::Extractor do # rubocop:disable Metrics/Blo
     end
 
     context "with associations excluded from input" do
-      before { openapi_class.association :owner, input: false }
+      before { openapi_class.association :owner, read_only: true }
 
       it "marks association as readOnly" do
         expect(extractor.extract[:properties]["owner"]).to include(readOnly: true)
@@ -106,7 +106,7 @@ RSpec.describe OpenapiBlocks::Schema::Extractor do # rubocop:disable Metrics/Blo
     end
 
     context "with array associations excluded from input" do
-      before { openapi_class.association :posts, type: :array, input: false }
+      before { openapi_class.association :posts, type: :array, read_only: true }
 
       it "marks array association as readOnly" do
         expect(extractor.extract[:properties]["posts"]).to include(readOnly: true)

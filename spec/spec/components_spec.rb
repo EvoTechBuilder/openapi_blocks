@@ -105,8 +105,8 @@ RSpec.describe OpenapiBlocks::Spec::Components do # rubocop:disable Metrics/Bloc
       end
     end
 
-    context "with associations excluded from input" do
-      before { openapi_class.association :posts, type: :array, input: false }
+    context "with read_only associations" do
+      before { openapi_class.association :posts, type: :array, read_only: true }
 
       it "includes posts in User schema" do
         properties = components.build[:schemas]["ComponentUser"][:properties]

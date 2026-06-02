@@ -30,14 +30,19 @@ module OpenapiBlocks
 
       private
 
-      def build_input(schema, openapi_class) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+      def build_input(schema, openapi_class) # rubocop:disable Metrics/AbcSize,Metrics/CyclomaticComplexity,Metrics/MethodLength,Metrics/PerceivedComplexity
         read_only_virtuals = Array(openapi_class._virtual_attributes)
                              .select { |attr| attr[:read_only] == true }
                              .map { |attr| attr[:name].to_s }
 
+        read_only_associations = Array(openapi_class._associations)
+                                 .select { |assoc| assoc[:read_only] == true }
+                                 .map { |assoc| assoc[:name].to_s }
+
         input_properties = schema[:properties].reject do |name, property|
           INPUT_IGNORED_PROPERTIES.include?(name.to_s) ||
-            read_only_virtuals.include?(name.to_s) ||
+            read_only_virtuals.include?(name.to_s)      ||
+            read_only_associations.include?(name.to_s)  ||
             property[:readOnly] == true
         end
 
