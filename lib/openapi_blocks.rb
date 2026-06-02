@@ -27,6 +27,8 @@ require_relative "openapi_blocks/serialization"
 require_relative "openapi_blocks/base"
 require_relative "openapi_blocks/serializer"
 require_relative "openapi_blocks/controller"
+require_relative "openapi_blocks/registry"
+require_relative "openapi_blocks/auto_serialize"
 
 module OpenapiBlocks # rubocop:disable Style/Documentation
   class Error < StandardError; end

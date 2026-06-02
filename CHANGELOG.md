@@ -8,48 +8,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- `OpenapiBlocks::Serializer` base class for standalone serializers in `app/serializers/` — infers model from class name (e.g. `UserSerializer` → `User`)
-- `OpenapiBlocks::Concerns::Schemable` module extracted from `Base` — provides `model`, `ignore`, `association`, `attribute` DSL
+
+- `OpenapiBlocks::Serializer` base class for standalone serializers in `app/serializers/` — infers model from class name (e.g. `UserSerializer` -> `User`)
+- `OpenapiBlocks::Concerns::Schemable` module extracted from `Base` — provides `model`, `ignore`, `association`, `attribute`, `serializes` DSL
 - `OpenapiBlocks::Concerns::Documentable` module extracted from `Base` — provides `operation`, `tags` DSL
-- `OpenapiBlocks::Serialization` module extracted from `Serializer` — internal serialization engine shared by `Base`, `Serializer`
-- `Configuration#configured?` flag — set to `true` when `config.info` or `config.openapi_version=` is called explicitly
+- `OpenapiBlocks::Serialization` module — internal serialization engine shared by `Base` and `Serializer`
+- `OpenapiBlocks::Registry` — maps models to serializers at boot; supports convention-based (`UserSerializer` -> `User`) and explicit (`serializes User`) registration
+- `OpenapiBlocks::AutoSerialize` — Rack middleware that intercepts `render json:` calls and applies the registered serializer automatically when `config.auto_serialize = true`
+- `Configuration#auto_serialize` flag — opt-in automatic serialization via `config.auto_serialize = true`
+- `Configuration#configured?` flag — set to `true` when `config.info` block is called
 - `Builder#validate_configuration!` — raises `OpenapiBlocks::Error` with a descriptive message if `configure` was never called or `info.title`/`info.version` are blank
+- `Railtie` now eager loads `app/serializers/**/*.rb` alongside `app/openapi/**/*.rb`
+- `Railtie` builds `Registry` and injects `AutoSerialize` into `ActionController::Base` and `ActionController::API` when `auto_serialize` is enabled
 
 ### Changed
-- `OpenapiBlocks::Resource` removed — replaced by `OpenapiBlocks::Serializer` (`app/serializers/user_serializer.rb`)
-- `OpenapiBlocks::Serialization` loops now stop at `serialization_sentinel` instead of hardcoded `OpenapiBlocks::Base`, allowing `Serializer` subclasses to traverse their own hierarchy correctly
-- `resolve_assoc_serializer` lookup order updated: `PostSerializer` → `PostOpenapi` (delegates to `_resource` if Controller)
-- `Spec::Components#build` extracts model via `resolve_schema_klass` — resolves `_resource` from `Controller` before building schema, supports `Serializer` as resource
-- `Base` now includes `Concerns::Schemable` and `Concerns::Documentable` instead of defining DSL methods directly — no behavioral change for existing users
+
+- `OpenapiBlocks::Resource` removed — replaced by `OpenapiBlocks::Serializer`
+- `OpenapiBlocks::Serialization` hierarchy traversal stops at `serialization_sentinel` instead of hardcoded `OpenapiBlocks::Base`
+- `resolve_assoc_serializer` lookup order: `PostSerializer` -> `PostOpenapi` (delegates to `_resource` if Controller) -> fallback to `as_json`
+- `Spec::Components#build` resolves model via `resolve_schema_klass` — supports both `Controller` (via `_resource`) and `Serializer` as schema source
+- `Base` now includes `Concerns::Schemable` and `Concerns::Documentable` — no behavioral change for existing users
+- Supported `openapi_version` values changed to `"3.1.0"` and `"3.0.3"` (previously `"3.1"` and `"3.0"`)
 
 ### Removed
+
 - `lib/openapi_blocks/resource.rb` — `OpenapiBlocks::Resource` is no longer part of the public API
 
 ## [0.3.1] - 2026-06-02
 
 ### Changed
+
 - `OpenapiBlocks::Controller` now uses `controller` to specifies exact controller
 
 ## [0.3.0] - 2026-06-01
 
 ### Added
+
 - Scalar UI served at `/docs/scalar` alongside Swagger UI
 - `SpecController#scalar` action serving Scalar with `displayRequestDuration` and Ruby `net_http` as default client
- - `Resource` and `Controller` classes to support serializer-style resources and controller-scoped OpenAPI classes (`lib/openapi_blocks/resource.rb`, `lib/openapi_blocks/controller.rb`)
+- `Resource` and `Controller` classes to support serializer-style resources and controller-scoped OpenAPI classes (`lib/openapi_blocks/resource.rb`, `lib/openapi_blocks/controller.rb`)
 
 ### Changed
+
 - `OpenapiBlocks::Serializer` now uses `class_eval` to compile a monolithic extractor method per serializer class at boot time, eliminating per-object branching and lambda indirection
 - Field classification (model / virtual / association) computed once via `classify_fields` and memoized — no runtime `respond_to?` or `Array#include?` per object
 - Association metadata indexed by name in a `Hash` for O(1) lookup instead of `Array#find` per field per object
 - Association serializer classes resolved at compile time inside `build_assoc_method` instead of per-object via `Object.const_get`
 - Serializer is now **1.86× faster** than the original implementation and **3.6× faster** than `as_json` across 10–5000 records with consistent linear scaling
- - `Builder#openapi_classes` expanded discovery to include classes ending with `Openapi` that inherit from `OpenapiBlocks::Base` or `OpenapiBlocks::Controller` (enables controller-scoped OpenAPI classes)
- - `Serializer` now includes virtual attributes and associations marked `read_only` in serialized output (they previously were omitted). This ensures `read_only: true` fields are present in responses/listings while still being excluded from `*Input` schemas.
- - `Base#infer_model` updated to strip both `Openapi` and `Resource` suffixes when inferring the model class name.
+- `Builder#openapi_classes` expanded discovery to include classes ending with `Openapi` that inherit from `OpenapiBlocks::Base` or `OpenapiBlocks::Controller` (enables controller-scoped OpenAPI classes)
+- `Serializer` now includes virtual attributes and associations marked `read_only` in serialized output (they previously were omitted). This ensures `read_only: true` fields are present in responses/listings while still being excluded from `*Input` schemas.
+- `Base#infer_model` updated to strip both `Openapi` and `Resource` suffixes when inferring the model class name.
 
 ## [0.2.1] - 2026-06-01
 
 ### Changed
+
 - `association` DSL now uses `read_only: true` instead of `input: false` for consistency with `attribute` DSL
 
 ## [0.2.0] - 2026-06-01

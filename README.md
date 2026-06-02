@@ -2,28 +2,15 @@
 
 OpenapiBlocks is a Rails gem that automatically generates OpenAPI 3.0/3.1 documentation from your ActiveRecord models, ActiveModel validations, and Rails routes — inspired by [ActiveModel::Serializer](https://github.com/rails-api/active_model_serializers).
 
-Versão em português brasileiro: README.pt-BR.md
+Versão em português brasileiro: [README.pt-BR.md](README.pt-BR.md)
 
 No manual annotation. No DSL noise in your controllers. Just declare what to expose and the spec is generated automatically. Includes a high-performance built-in serializer — ~3.6× faster than `as_json` with consistent linear scaling from 10 to 5000 records.
-
-## Key changes (recent)
-
-- `OpenapiBlocks::Serializer` introduced for standalone serializers in `app/serializers/` — separating serialization from documentation concerns.
-- `OpenapiBlocks::Controller` links a serializer to its API documentation via `resource` and `controller` DSL.
-- `OpenapiBlocks::Resource` removed — replaced by `OpenapiBlocks::Serializer`.
-- `OpenapiBlocks.configure` is now required — raises a descriptive error if `info.title` or `info.version` are missing.
-- Default OpenAPI version is `3.1.0` (supported: `3.1.0`, `3.0.3`).
-- Scalar UI is now the default UI at `/docs`. Swagger UI is available at `/docs/swagger`.
-- `association` DSL uses `read_only: true` to mark fields as response-only and exclude them from `*Input` schemas.
-- `tags` are generated at the document root from paths and can be customized via the `tags` DSL on classes and operations.
-- Schema references accept `Symbol` (e.g. `schema: :user`) and array items can be symbol references (e.g. `items: :user`).
-- Serializer uses `class_eval` to compile a monolithic extractor method per class at boot — eliminating per-object branching, lambda indirection, and runtime `respond_to?` checks.
 
 ---
 
 ## Installation
 
-Add to your Gemfile:
+Add to your `Gemfile`:
 
 ```ruby
 gem "openapi_blocks"
@@ -53,7 +40,7 @@ end
 This exposes:
 
 ```
-GET /docs               ->  Scalar UI
+GET /docs               ->  Scalar UI (default)
 GET /docs/swagger       ->  Swagger UI
 GET /docs/openapi.json  ->  OpenAPI spec in JSON
 GET /docs/openapi.yaml  ->  OpenAPI spec in YAML
@@ -97,7 +84,8 @@ OpenapiBlocks.configure do |config|
     end
   end
 
-  config.watch = :development  # auto-reload on file changes
+  config.watch          = :development  # auto-reload on file changes
+  config.auto_serialize = true          # optional — see Auto Serialization below
 
   # optional: security schemes
   config.security do
@@ -114,10 +102,10 @@ end
 OpenapiBlocks provides two base classes with distinct responsibilities:
 
 - `OpenapiBlocks::Serializer` — defines the model, fields, associations, and serialization logic. Lives in `app/serializers/`.
-- `OpenapiBlocks::Controller` — defines the API operations, parameters, and responses for documentation. Lives in `app/openapi/`.
+- `OpenapiBlocks::Controller` — defines API operations, parameters, and responses for documentation. Lives in `app/openapi/`.
 - `OpenapiBlocks::Base` — legacy base class that combines both concerns. Still supported.
 
-### Serializer + Controller (recommended)
+### Recommended: Serializer + Controller
 
 ```
 app/
@@ -154,7 +142,7 @@ end
 ```ruby
 # app/openapi/user_openapi.rb
 class UserOpenapi < OpenapiBlocks::Controller
-  resource UserSerializer
+  resource   UserSerializer
   controller UsersController
 
   tags "Users"
@@ -192,7 +180,7 @@ def show
 end
 ```
 
-### Base (legacy, single class)
+### Legacy: Base (single class)
 
 ```ruby
 # app/openapi/user_openapi.rb
@@ -221,13 +209,45 @@ end
 
 ---
 
+## Auto Serialization
+
+When `config.auto_serialize = true`, OpenapiBlocks intercepts every `render json:` call and automatically applies the registered serializer — no explicit serializer call needed in controllers.
+
+```ruby
+# config/initializers/openapi_blocks.rb
+config.auto_serialize = true
+```
+
+```ruby
+# app/controllers/users_controller.rb
+def index
+  render json: User.all  # automatically serialized by UserSerializer
+end
+
+def show
+  render json: @user  # automatically serialized by UserSerializer
+end
+```
+
+Serializer registration is automatic by convention (`UserSerializer` -> `User`). For explicit registration:
+
+```ruby
+class AdminUserSerializer < OpenapiBlocks::Serializer
+  serializes User  # explicitly maps this serializer to the User model
+end
+```
+
+If no serializer is found, OpenapiBlocks falls back to default Rails rendering and logs a warning.
+
+---
+
 ## Serializer
 
 The built-in serializer compiles a monolithic extractor method per class at boot time using `class_eval`. There are no loops, no lambda indirection, and no runtime branching per object.
 
 ### Performance (200 records, arm64, Ruby 4.0)
 
-|            | i/s   | μs/i | vs serialize |
+| Method     | i/s   | μs/i | vs serialize |
 | ---------- | ----- | ---- | ------------ |
 | serialize  | 4 239 | 235  | —            |
 | to_json    | 1 444 | 692  | 2.94× slower |
@@ -242,7 +262,7 @@ Scaling is linear — the 3.6× advantage over `as_json` holds from 10 to 5000 r
 | ---------------------- | --------------------- | --------------------------------------- |
 | `attribute :full_name` | yes                   | `serializer_instance.full_name`         |
 | `attribute :full_name` | no                    | `object.full_name` (delegated to model) |
-| column in db           | —                     | `object.full_name` (direct)             |
+| column in db           | —                     | `object.attribute` (direct)             |
 
 ### Association serializer resolution
 
@@ -270,7 +290,7 @@ end
 OpenapiBlocks generates:
 
 - `User` schema from `db/schema.rb` columns and types
-- `UserInput` schema for POST, PUT and PATCH request bodies (without `id`, `created_at`, `updated_at` and `read_only` fields)
+- `UserInput` schema for `POST`, `PUT` and `PATCH` request bodies (without `id`, `created_at`, `updated_at` and `read_only` fields)
 - `required` fields from `presence: true` validations
 - `minLength`, `maxLength` from `length` validations
 - `minimum`, `maximum` from `numericality` validations
@@ -286,8 +306,8 @@ Configure global security schemes in the initializer:
 
 ```ruby
 config.security do
-  bearer_token format: "JWT"                    # Authorization: Bearer <token>
-  api_key      name: "X-API-Key", in: :header   # X-API-Key: <key>
+  bearer_token format: "JWT"                   # Authorization: Bearer <token>
+  api_key      name: "X-API-Key", in: :header  # X-API-Key: <key>
 end
 ```
 
@@ -295,11 +315,11 @@ Override security per operation:
 
 ```ruby
 operation :index do
-  security :bearerAuth   # only bearer on this operation
+  security :bearerAuth  # only bearer on this operation
 end
 
 operation :show do
-  no_security!           # public endpoint — no auth required
+  no_security!          # public endpoint — no auth required
 end
 ```
 
@@ -308,9 +328,9 @@ end
 ## Associations
 
 ```ruby
-association :company                                  # belongs_to — $ref to Company schema
-association :posts, type: :array                      # has_many — array of $ref to Post schema
-association :posts, type: :array, read_only: true     # excluded from UserInput (response only)
+association :company                               # belongs_to — $ref to Company schema
+association :posts, type: :array                   # has_many — array of $ref to Post schema
+association :posts, type: :array, read_only: true  # excluded from UserInput (response only)
 ```
 
 ---
@@ -325,28 +345,28 @@ Virtual attributes are fields that exist in the API response but not in the data
 | `read_only: false` | Fields the client can send and receive |       YES       |         YES          |
 
 ```ruby
-attribute :full_name,    type: :string, read_only: true   # response only
-attribute :access_token, type: :string, read_only: true   # response only
-attribute :nickname,     type: :string                    # request and response
+attribute :full_name,    type: :string, read_only: true  # response only
+attribute :access_token, type: :string, read_only: true  # response only
+attribute :nickname,     type: :string                   # request and response
 ```
 
 ---
 
 ## Type Mapping
 
-| ActiveRecord type | OpenAPI type       |
-| ----------------- | ------------------ |
-| integer           | integer / int32    |
-| bigint            | integer / int64    |
-| float             | number / float     |
-| decimal           | number / double    |
-| string            | string             |
-| text              | string             |
-| boolean           | boolean            |
-| date              | string / date      |
-| datetime          | string / date-time |
-| uuid              | string / uuid      |
-| json / jsonb      | object             |
+| ActiveRecord type | OpenAPI type           |
+| ----------------- | ---------------------- |
+| `integer`         | `integer` / `int32`    |
+| `bigint`          | `integer` / `int64`    |
+| `float`           | `number` / `float`     |
+| `decimal`         | `number` / `double`    |
+| `string`          | `string`               |
+| `text`            | `string`               |
+| `boolean`         | `boolean`              |
+| `date`            | `string` / `date`      |
+| `datetime`        | `string` / `date-time` |
+| `uuid`            | `string` / `uuid`      |
+| `json` / `jsonb`  | `object`               |
 
 ---
 
@@ -375,4 +395,4 @@ The spec is automatically regenerated on the next request to `/docs/openapi.json
 
 ## License
 
-MIT (LICENSE.txt)
+[MIT](LICENSE.txt)

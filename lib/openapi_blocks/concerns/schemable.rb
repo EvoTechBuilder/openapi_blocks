@@ -8,7 +8,7 @@ module OpenapiBlocks
       end
 
       module ClassMethods # rubocop:disable Style/Documentation
-        attr_reader :_model, :_ignored, :_associations, :_virtual_attributes
+        attr_reader :_model, :_ignored, :_associations, :_virtual_attributes, :_serializes
 
         def model(klass = nil)
           klass ? @_model = klass : @_model ||= infer_model # rubocop:disable Naming/MemoizedInstanceVariableName
@@ -27,6 +27,11 @@ module OpenapiBlocks
         def attribute(name, **)
           @_virtual_attributes ||= []
           @_virtual_attributes << { name: name, ** }
+        end
+
+        def serializes(*models)
+          @_serializes ||= []
+          @_serializes.concat(models)
         end
 
         private

@@ -33,9 +33,9 @@ module OpenapiBlocks
       def build_compiled_extractor # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
         classified = classify_fields
 
-        model_lines     = classified[:model].map     { |f| %("#{f}" => object.public_send(:#{f})) }
-        virtual_lines   = classified[:virtual].map   { |f| %("#{f}" => inst.public_send(:#{f})) }
-        delegated_lines = classified[:delegated].map { |f| %("#{f}" => object.public_send(:#{f})) }
+        model_lines = classified[:model].map { |f| %("#{f}" => object.public_send("#{f}")) }
+        virtual_lines   = classified[:virtual].map   { |f| %("#{f}" => inst.public_send("#{f}")) }
+        delegated_lines = classified[:delegated].map { |f| %("#{f}" => object.public_send("#{f}")) }
         assoc_lines     = classified[:association].map do |f|
           %("#{f}" => _serialize_assoc_#{f}(object))
         end

@@ -9,11 +9,12 @@ module OpenapiBlocks
     SUPPORTED_VERSIONS = %w[3.1.0 3.0.3].freeze
 
     attr_reader   :openapi_version
-    attr_accessor :watch
+    attr_accessor :watch, :auto_serialize
 
     def initialize
       @openapi_version = "3.1.0"
       @watch           = :development
+      @auto_serialize  = false
       @info            = InfoBuilder.new
       @servers         = []
       @security        = nil
