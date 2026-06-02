@@ -180,7 +180,22 @@ module OpenapiBlocks
         openapi_name = "#{operation.schema_name}Openapi"
         Object.const_get(openapi_name)
       rescue NameError
-        nil
+        openapi_classes.find do |klass|
+          klass.respond_to?(:_controller_class) && klass._controller_class.present? &&
+            controller_name_for(klass._controller_class) == operation.controller
+        end
+      end
+
+      def openapi_classes
+        ObjectSpace.each_object(Class).select do |klass|
+          name = Module.instance_method(:name).bind_call(klass)
+          name&.end_with?("Openapi") &&
+            (klass < OpenapiBlocks::Base || klass < OpenapiBlocks::Controller)
+        end
+      end
+
+      def controller_name_for(controller_class)
+        controller_class.to_s.delete_suffix("Controller").underscore
       end
     end
   end

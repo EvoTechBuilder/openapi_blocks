@@ -3,10 +3,14 @@
 module OpenapiBlocks
   class Controller # rubocop:disable Style/Documentation
     class << self
-      attr_reader :_resource, :_operations, :_tags
+      attr_reader :_resource, :_operations, :_tags, :_controller_class
 
       def resource(klass)
         @_resource = klass
+      end
+
+      def controller(klass)
+        @_controller_class = klass
       end
 
       def model

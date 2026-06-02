@@ -119,6 +119,24 @@ RSpec.describe OpenapiBlocks::Routing::Extractor do # rubocop:disable Metrics/Bl
       end
     end
 
+    context "with controller mapping defined in OpenapiBlocks::Controller subclass" do
+      before do
+        stub_const("ArticlesController", Class.new)
+        stub_const("ArticleOpenapi", Class.new(OpenapiBlocks::Controller) do
+          controller ArticlesController
+
+          operation :index do
+            summary "Mapped controller"
+          end
+        end)
+      end
+
+      it "uses the mapped controller openapi class" do
+        operation = extractor.extract["/articles"]["get"]
+        expect(operation[:summary]).to eq("Mapped controller")
+      end
+    end
+
     context "with custom tags on openapi class" do
       before do
         stub_const("Article", Class.new)
