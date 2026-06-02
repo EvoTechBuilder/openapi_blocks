@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-01
+
+### Added
+
+- `OpenapiBlocks::OperationBuilder` DSL for customizing operations per action
+- `summary` and `description` customization per operation
+- `parameter` DSL for query parameters with `in:`, `type:`, `description:` and `required:` options
+- `response` DSL with `description:` and `schema:` options
+- `tags` DSL on `OpenapiBlocks::Base` for custom tags per OpenAPI class
+- `tags` DSL on `OperationBuilder` for custom tags per operation
+- Tag resolution priority: operation tags > class tags > inferred from controller name
+- `OpenapiBlocks::Configuration::SecurityBuilder` with `bearer_token` and `api_key` DSL
+- Global `security` configuration in initializer
+- Per-operation `security` and `no_security!` DSL in `OperationBuilder`
+- `securitySchemes` generated automatically in `components`
+- `tags` array generated at document root level from paths
+- Swagger UI served at root of mounted engine (`/docs`)
+- `SpecController#ui` action serving Swagger UI with JSON/YAML spec switcher
+- `association` DSL now supports `input: false` to exclude from input schema
+- Associations excluded from `required` fields automatically
+- `resolve_schema` classifies symbol references (`:user` → `User`)
+- Automatic `UserInput` schema excludes `read_only: true` virtual attributes
+- Validation for `openapi_version` — raises `ArgumentError` for unsupported versions
+- RSpec coverage for `OperationBuilder`, `SecurityBuilder`, tags and security
+
+### Fixed
+
+- `find_openapi_class` uses `Object.const_get` instead of `ObjectSpace` for reliability
+- `openapi` version field correctly outputs `3.1.0` instead of `3.1`
+
 ## [0.1.0] - 2026-06-01
 
 ### Added
@@ -51,12 +81,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swagger UI served at root of mounted engine (`/docs`)
 - `SpecController#ui` action serving Swagger UI with JSON/YAML spec switcher
 
-### Added
-- RSpec coverage for `OperationBuilder` — summary, description, tags, parameters, responses, security and no_security!
-- RSpec coverage for `Configuration::SecurityBuilder` — bearer_token and api_key schemes
-- RSpec coverage for custom tags per OpenAPI class and per operation
-- RSpec coverage for per-operation security and no_security!
-- Fixed `find_openapi_class` to use `Object.const_get` instead of `ObjectSpace` for reliability
-
-[Unreleased]: https://github.com/evotechbuilder/openapi_blocks/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/evotechbuilder/openapi_blocks/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/evotechbuilder/openapi_blocks/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/evotechbuilder/openapi_blocks/releases/tag/v0.1.0
