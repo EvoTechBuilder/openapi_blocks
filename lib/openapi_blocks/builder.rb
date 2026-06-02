@@ -16,8 +16,9 @@ module OpenapiBlocks
 
     def openapi_classes
       ObjectSpace.each_object(Class).select do |klass|
-        klass < OpenapiBlocks::Base &&
-          klass.name&.end_with?("Openapi")
+        name = Module.instance_method(:name).bind_call(klass)
+        name&.end_with?("Openapi") &&
+          (klass < OpenapiBlocks::Base || klass < OpenapiBlocks::Controller)
       end
     end
   end

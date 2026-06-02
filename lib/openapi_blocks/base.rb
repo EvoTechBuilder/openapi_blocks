@@ -42,6 +42,7 @@ module OpenapiBlocks
       def infer_model
         model_name = name
                      .gsub(/Openapi$/, "")
+                     .gsub(/Resource$/, "")
                      .split("::")
                      .last
 

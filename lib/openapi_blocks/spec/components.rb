@@ -12,17 +12,25 @@ module OpenapiBlocks
         @openapi_classes = openapi_classes
       end
 
-      def build # rubocop:disable Metrics/AbcSize
+      def build # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
         schemas = @openapi_classes.each_with_object({}) do |klass, hash|
-          schema_name = klass.model.name
-          extractor   = Schema::Extractor.new(klass)
-          validator   = Schema::Validator.new(klass.model)
+          schema_klass = klass.respond_to?(:_resource) && klass._resource ? klass._resource : klass
+
+          begin
+            next unless schema_klass.model
+          rescue StandardError
+            next
+          end
+
+          schema_name = schema_klass.model.name
+          extractor   = Schema::Extractor.new(schema_klass)
+          validator   = Schema::Validator.new(schema_klass.model)
 
           schema              = extractor.extract
           schema[:properties] = merge_validations(schema[:properties], validator.extract)
 
-          hash[schema_name]            = schema
-          hash["#{schema_name}Input"]  = build_input(schema, klass)
+          hash[schema_name]           = schema
+          hash["#{schema_name}Input"] = build_input(schema, schema_klass)
         end
 
         { schemas: schemas }
