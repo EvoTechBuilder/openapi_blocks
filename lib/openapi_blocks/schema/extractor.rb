@@ -73,12 +73,17 @@ module OpenapiBlocks
         end
       end
 
-      def required_columns
+      def required_columns # rubocop:disable Metrics/AbcSize,Metrics/CyclomaticComplexity
+        association_names = Array(@openapi_class._associations).map { |a| a[:name].to_s }
+
         required = @model.validators.each_with_object([]) do |validator, arr|
           next unless validator.is_a?(ActiveModel::Validations::PresenceValidator)
 
           validator.attributes.each do |attr|
-            arr << attr.to_s unless @ignored.include?(attr.to_s)
+            next if @ignored.include?(attr.to_s)
+            next if association_names.include?(attr.to_s)
+
+            arr << attr.to_s
           end
         end
 
