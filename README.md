@@ -6,6 +6,15 @@ Versão em português brasileiro: README.pt-BR.md
 
 No manual annotation. No DSL noise in your controllers. Just declare what to expose and the spec is generated automatically.
 
+## Key changes (recent)
+- Default OpenAPI version is `3.1.0` (supported: `3.1.0`, `3.0.3`).
+- Swagger UI is served at the engine mount path and uses same-origin spec endpoints to avoid CORS — the UI shows a servers topbar but will fetch the spec from the mounted engine URL.
+- YAML output is normalized to use string keys (uses `deep_stringify_keys`) so Swagger UI accepts the `openapi` version field.
+- `association` DSL uses `read_only: true` to mark fields as response-only and exclude them from `*Input` schemas; `read_only` attributes and associations remain present in responses.
+- `tags` are generated at the document root from paths and can be customized via the `tags` DSL on classes and operations.
+- Schema references accept `Symbol` (e.g. `schema: :user`) and array items can be symbol references (e.g. `items: :user`).
+- Serializer now includes `read_only` attributes in output and has compile-time performance improvements.
+
 ---
 
 ## Installation
@@ -50,7 +59,7 @@ GET /docs/openapi.yaml  ->  OpenAPI spec in YAML
 ```ruby
 # config/initializers/openapi_blocks.rb
 OpenapiBlocks.configure do |config|
-  config.openapi_version = "3.1"  # "3.0" or "3.1"
+  config.openapi_version = "3.1.0"  # "3.0.3" or "3.1.0"
 
   config.info do
     title       "My API"

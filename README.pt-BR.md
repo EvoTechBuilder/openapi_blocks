@@ -4,6 +4,15 @@ OpenapiBlocks é uma gem Rails que gera automaticamente documentação OpenAPI 3
 
 Sem anotações manuais. Sem ruído de DSL nos controllers. Basta declarar o que deve ser exposto e o spec é gerado automaticamente.
 
+## Principais mudanças (recentes)
+- Versão padrão do OpenAPI: `3.1.0` (suportado: `3.1.0`, `3.0.3`).
+- A Swagger UI é servida no caminho onde a engine foi montada e usa endpoints do mesmo origin (same-origin) para evitar CORS — a UI mostra uma lista de servidores, mas buscará o spec a partir da URL montada.
+- A saída YAML é normalizada para chaves em string (`deep_stringify_keys`) para que o campo `openapi` seja reconhecido pelo Swagger UI.
+- O DSL `association` usa `read_only: true` para marcar associações como somente resposta e excluí-las dos schemas `*Input`; associações/atributos `read_only` continuam presentes nas respostas.
+- O `tags` é gerado no nível do documento a partir dos paths e pode ser customizado via `tags` nas classes e operações.
+- Referências de schema aceitam `Symbol` (ex.: `schema: :user`) e arrays com items como símbolos (ex.: `items: :user`).
+- O serializer agora inclui atributos `read_only` na saída e teve melhorias de performance em tempo de compilação.
+
 ---
 
 ## Instalação
@@ -244,7 +253,7 @@ end
 ```ruby
 association :company                             # belongs_to — $ref para Company schema
 association :posts, type: :array                 # has_many — array de $ref para Post schema
-association :posts, type: :array, input: false   # excluído do UserInput (response only)
+  association :posts, type: :array, read_only: true   # excluído do UserInput (response only)
 ```
 
 ---
