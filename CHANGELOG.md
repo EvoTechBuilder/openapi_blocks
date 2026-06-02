@@ -45,6 +45,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `association` DSL now supports `input: false` to exclude from `UserInput`
 - Associations excluded from `required` fields automatically
 - `resolve_schema` now classifies symbol references (`:user` → `User`)
+- `tags` DSL on `OpenapiBlocks::Base` for custom tags per OpenAPI class
+- `tags` DSL on `OperationBuilder` for custom tags per operation
+- Tag resolution priority: operation tags > class tags > inferred from controller name
+- Swagger UI served at root of mounted engine (`/docs`)
+- `SpecController#ui` action serving Swagger UI with JSON/YAML spec switcher
 
 [Unreleased]: https://github.com/evotechbuilder/openapi_blocks/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/evotechbuilder/openapi_blocks/releases/tag/v0.1.0

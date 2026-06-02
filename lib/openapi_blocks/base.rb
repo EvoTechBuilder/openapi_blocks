@@ -3,7 +3,7 @@
 module OpenapiBlocks
   class Base # rubocop:disable Style/Documentation
     class << self
-      attr_reader :_model, :_ignored, :_associations, :_virtual_attributes, :_operations
+      attr_reader :_model, :_ignored, :_associations, :_virtual_attributes, :_operations, :_tags
 
       def model(klass = nil)
         klass ? @_model = klass : @_model ||= infer_model # rubocop:disable Naming/MemoizedInstanceVariableName
@@ -29,6 +29,10 @@ module OpenapiBlocks
         builder = OperationBuilder.new
         builder.instance_eval(&block) if block
         @_operations[action] = builder
+      end
+
+      def tags(*values)
+        values.any? ? @_tags = values : @_tags
       end
 
       private

@@ -7,7 +7,6 @@ module OpenapiBlocks
     SWAGGER_UI_CSS = "https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css"
     SWAGGER_UI_STANDALONE_JS = "https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js"
     SWAGGER_UI_JS = "https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"
-    SWAGGER_UI_TITLE = "#{OpenapiBlocks.configuration.info.title} - SwaggerUI".freeze
 
     def ui
       render html: swagger_ui_html.html_safe
@@ -35,7 +34,7 @@ module OpenapiBlocks
           <head>
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <title>#{SWAGGER_UI_TITLE}</title>
+            <title>#{swagger_ui_title}</title>
             <link rel="stylesheet" href="#{SWAGGER_UI_CSS}" />
             <style>
               html, body { margin: 0; padding: 0; height: 100%; background: #f6f7fb; }
@@ -66,7 +65,11 @@ module OpenapiBlocks
       HTML
     end
 
-    def swagger_ui_urls
+    def swagger_ui_title
+      "#{OpenapiBlocks.configuration.info.title} - SwaggerUI"
+    end
+
+    def swagger_ui_urls # rubocop:disable Metrics/MethodLength
       spec_base = swagger_spec_base_url
       servers = OpenapiBlocks.configuration.to_h[:servers]
 
@@ -100,13 +103,8 @@ module OpenapiBlocks
       mount_path.present? ? "#{mount_path}/openapi" : "/openapi"
     end
 
-    def swagger_ui_servers(spec)
-      servers = Array(spec["servers"])
-      current_origin = { "url" => request.base_url, "description" => "Current" }
-
-      return [current_origin] if servers.empty?
-
-      [current_origin]
+    def swagger_ui_servers(_spec)
+      [{ "url" => request.base_url, "description" => "Current" }]
     end
   end
 end

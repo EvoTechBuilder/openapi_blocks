@@ -2,7 +2,7 @@
 
 module OpenapiBlocks
   class OperationBuilder # rubocop:disable Style/Documentation
-    attr_reader :_summary, :_description, :_parameters, :_responses, :_security
+    attr_reader :_summary, :_description, :_parameters, :_responses, :_security, :_tags
 
     def summary(value = nil)
       value ? @_summary = value : @_summary
@@ -10,6 +10,10 @@ module OpenapiBlocks
 
     def description(value = nil)
       value ? @_description = value : @_description
+    end
+
+    def tags(*values)
+      values.any? ? @_tags = values : @_tags
     end
 
     def parameter(name, in:, type:, description: nil, required: false)
@@ -45,7 +49,8 @@ module OpenapiBlocks
         description: @_description,
         parameters:  @_parameters,
         responses:   @_responses,
-        security:    @_security
+        security:    @_security,
+        tags:        @_tags
       }.compact
     end
   end

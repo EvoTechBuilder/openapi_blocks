@@ -47,9 +47,10 @@ module OpenapiBlocks
       def build_operation(operation) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength,Metrics/CyclomaticComplexity
         meta = operation_meta(operation)
         parameters = build_parameters(operation, meta)
+        tags       = build_tags(operation, meta)
 
         op = {
-          tags:        [operation.schema_name],
+          tags:        tags,
           summary:     meta&._summary || build_summary(operation),
           operationId: build_operation_id(operation),
           responses:   meta&._responses ? build_custom_responses(meta) : build_default_responses(operation)
@@ -61,6 +62,15 @@ module OpenapiBlocks
         op[:security]    = meta._security if meta&._security
 
         op
+      end
+
+      def build_tags(operation, meta)
+        return meta._tags if meta&._tags&.any?
+
+        openapi_class = find_openapi_class(operation)
+        return openapi_class._tags if openapi_class&._tags&.any?
+
+        [operation.schema_name]
       end
 
       def build_summary(operation)
