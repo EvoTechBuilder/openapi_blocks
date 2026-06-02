@@ -16,7 +16,8 @@ module OpenapiBlocks
 
     def openapi_classes
       ObjectSpace.each_object(Class).select do |klass|
-        klass < OpenapiBlocks::Base
+        klass < OpenapiBlocks::Base &&
+          klass.name&.end_with?("Openapi")
       end
     end
   end

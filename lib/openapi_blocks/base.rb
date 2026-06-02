@@ -2,6 +2,8 @@
 
 module OpenapiBlocks
   class Base # rubocop:disable Style/Documentation
+    include Serializer
+
     class << self
       attr_reader :_model, :_ignored, :_associations, :_virtual_attributes, :_operations, :_tags
 

@@ -4,12 +4,17 @@ require "action_controller/api"
 
 module OpenapiBlocks
   class SpecController < ActionController::API # rubocop:disable Style/Documentation
-    SWAGGER_UI_CSS = "https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css"
-    SWAGGER_UI_STANDALONE_JS = "https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js"
-    SWAGGER_UI_JS = "https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"
+    SWAGGER_UI_CSS             = "https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css"
+    SWAGGER_UI_STANDALONE_JS   = "https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js"
+    SWAGGER_UI_JS              = "https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"
+    SCALAR_JS                  = "https://cdn.jsdelivr.net/npm/@scalar/api-reference"
 
     def ui
       render html: swagger_ui_html.html_safe
+    end
+
+    def scalar
+      render html: scalar_html.html_safe
     end
 
     def show
@@ -24,6 +29,42 @@ module OpenapiBlocks
     end
 
     private
+
+    def scalar_html
+      spec_url = "#{swagger_spec_base_url}.json"
+      title    = "#{OpenapiBlocks.configuration.info.title} - Scalar"
+
+      <<~HTML
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>#{title}</title>
+          </head>
+          <body>
+            <script
+              id="api-reference"
+              data-url="#{spec_url}"
+              data-configuration='#{scalar_configuration.to_json}'
+            ></script>
+            <script src="#{SCALAR_JS}"></script>
+          </body>
+        </html>
+      HTML
+    end
+
+    def scalar_configuration
+      {
+        theme:                  "default",
+        layout:                 "modern",
+        displayRequestDuration: true,
+        defaultHttpClient:      {
+          targetKey: "ruby",
+          clientKey: "net_http"
+        }
+      }
+    end
 
     def swagger_ui_html # rubocop:disable Metrics/MethodLength
       urls = swagger_ui_urls
@@ -69,22 +110,16 @@ module OpenapiBlocks
       "#{OpenapiBlocks.configuration.info.title} - SwaggerUI"
     end
 
-    def swagger_ui_urls # rubocop:disable Metrics/MethodLength
+    def swagger_ui_urls
       spec_base = swagger_spec_base_url
-      servers = OpenapiBlocks.configuration.to_h[:servers]
+      servers   = OpenapiBlocks.configuration.to_h[:servers]
 
       return default_swagger_ui_urls if servers.blank?
 
       servers.flat_map do |server|
         [
-          {
-            url:  "#{spec_base}.json",
-            name: "#{server[:url]} JSON"
-          },
-          {
-            url:  "#{spec_base}.yaml",
-            name: "#{server[:url]} YAML"
-          }
+          { url: "#{spec_base}.json", name: "#{server[:url]} JSON" },
+          { url: "#{spec_base}.yaml", name: "#{server[:url]} YAML" }
         ]
       end
     end

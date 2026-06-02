@@ -2,6 +2,7 @@
 
 require "active_support/all"
 require "active_record"
+require "oj"
 
 require_relative "openapi_blocks/version"
 require_relative "openapi_blocks/configuration"
@@ -17,6 +18,7 @@ require_relative "openapi_blocks/spec/components"
 require_relative "openapi_blocks/spec/paths"
 require_relative "openapi_blocks/spec/document"
 require_relative "openapi_blocks/builder"
+require_relative "openapi_blocks/serializer"
 require_relative "openapi_blocks/base"
 require_relative "openapi_blocks/engine"
 require_relative "openapi_blocks/railtie"

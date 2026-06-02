@@ -30,6 +30,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "oj",    ">= 3.0"
   spec.add_dependency "rails", ">= 7.0"
 
   spec.add_development_dependency "actionpack",   ">= 7.0" # rubocop:disable Gemspec/DevelopmentDependencies
