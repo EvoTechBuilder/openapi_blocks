@@ -1,8 +1,8 @@
 # OpenapiBlocks
 
-OpenapiBlocks is a Rails gem that automatically generates OpenAPI 3.0/3.1 documentation from your ActiveRecord models, ActiveModel validations, and Rails routes — inspired by [ActiveModel::Serializer](https://github.com/rails-api/active_model_serializers).
+OpenapiBlocks is a Rails gem that automatically generates OpenAPI 3.0/3.1 documentation from your ActiveRecord models, ActiveModel validations, and Rails routes — inspired by ActiveModel::Serializer (https://github.com/rails-api/active_model_serializers).
 
-Versão em português brasileiro: [README.pt-BR.md](README.pt-BR.md)
+Versão em português brasileiro: README.pt-BR.md
 
 No manual annotation. No DSL noise in your controllers. Just declare what to expose and the spec is generated automatically.
 
@@ -10,7 +10,7 @@ No manual annotation. No DSL noise in your controllers. Just declare what to exp
 
 ## Installation
 
-Add to your `Gemfile`:
+Add to your Gemfile:
 
 ```ruby
 gem "openapi_blocks"
@@ -40,8 +40,9 @@ end
 This exposes:
 
 ```
-GET /docs/openapi.json
-GET /docs/openapi.yaml
+GET /docs               ->  Swagger UI
+GET /docs/openapi.json  ->  OpenAPI spec in JSON
+GET /docs/openapi.yaml  ->  OpenAPI spec in YAML
 ```
 
 ### 2. Configure the initializer
@@ -81,6 +82,12 @@ OpenapiBlocks.configure do |config|
   end
 
   config.watch = :development  # auto-reload on file changes
+
+  # optional: security schemes
+  config.security do
+    bearer_token format: "JWT"
+    api_key      name: "X-API-Key", in: :header
+  end
 end
 ```
 
@@ -90,7 +97,7 @@ end
 
 ### Creating an OpenAPI class
 
-Create a file in `app/openapi/` following the same naming convention as ActiveModel::Serializer:
+Create a file in app/openapi/ following the same naming convention as ActiveModel::Serializer:
 
 ```
 app/
@@ -105,12 +112,15 @@ app/
 class UserOpenapi < OpenapiBlocks::Base
   # model User is inferred automatically from the class name
 
+  # custom tags (default: inferred from controller name)
+  tags "Users"
+
   # opt-out sensitive or unnecessary fields
   ignore :password_digest, :reset_password_token
 
   # opt-in associations
   association :company
-  association :posts, type: :array
+  association :posts, type: :array, input: false  # excluded from UserInput
 
   # virtual attributes (not in the database)
   # read_only: true  ->  exposed in response (User), excluded from request body (UserInput)
@@ -136,23 +146,26 @@ end
 
 OpenapiBlocks generates:
 
-- `User` schema from `db/schema.rb` columns and types
-- `UserInput` schema for `POST`, `PUT` and `PATCH` request bodies (without `id`, `created_at`, `updated_at` and `read_only` virtual attributes)
-- `required` fields from `presence: true` validations
-- `minLength`, `maxLength` from `length` validations
-- `minimum`, `maximum` from `numericality` validations
-- `enum` from `inclusion` validations
-- `format: "email"` from format validations
-- All paths from `config/routes.rb`
+- User schema from db/schema.rb columns and types
+- UserInput schema for POST, PUT and PATCH request bodies (without id, created_at, updated_at and read_only virtual attributes)
+- required fields from presence: true validations
+- minLength, maxLength from length validations
+- minimum, maximum from numericality validations
+- enum from inclusion validations
+- format: "email" from format validations
+- All paths from config/routes.rb
 
 ### Customizing operations
 
 ```ruby
 # app/openapi/user_openapi.rb
 class UserOpenapi < OpenapiBlocks::Base
+  tags "Users"
+
   operation :index do
     summary     "List all users"
     description "Returns a paginated list of active users"
+    tags        "Users", "Admin"  # overrides class-level tags for this operation
 
     parameter :page,     in: :query, type: :integer, description: "Page number"
     parameter :per_page, in: :query, type: :integer, description: "Items per page"
@@ -190,6 +203,41 @@ class UserOpenapi < OpenapiBlocks::Base
     response 404, description: "User not found"
   end
 end
+```
+
+---
+
+## Security
+
+Configure global security schemes in the initializer:
+
+```ruby
+config.security do
+  bearer_token format: "JWT"                    # Authorization: Bearer <token>
+  api_key      name: "X-API-Key", in: :header   # X-API-Key: <key>
+end
+```
+
+Override security per operation:
+
+```ruby
+operation :index do
+  security :bearerAuth   # only bearer on this operation
+end
+
+operation :show do
+  no_security!           # public endpoint — no auth required
+end
+```
+
+---
+
+## Associations
+
+```ruby
+association :company                             # belongs_to — $ref to Company schema
+association :posts, type: :array                 # has_many — array of $ref to Post schema
+association :posts, type: :array, input: false   # excluded from UserInput (response only)
 ```
 
 ---
@@ -240,7 +288,7 @@ config/routes.rb
 db/schema.rb
 ```
 
-The spec is automatically regenerated on the next request to `/docs/openapi.json` whenever any of these files change. No server restart needed.
+The spec is automatically regenerated on the next request to /docs/openapi.json whenever any of these files change. No server restart needed.
 
 ---
 
