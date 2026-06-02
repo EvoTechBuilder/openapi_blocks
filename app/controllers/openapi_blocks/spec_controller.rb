@@ -25,7 +25,7 @@ module OpenapiBlocks
 
     private
 
-    def swagger_ui_html
+    def swagger_ui_html # rubocop:disable Metrics/MethodLength
       urls = swagger_ui_urls
 
       <<~HTML

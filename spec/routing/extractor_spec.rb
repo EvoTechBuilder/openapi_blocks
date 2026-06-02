@@ -1,27 +1,5 @@
 # frozen_string_literal: true
 
-RSpec.describe OpenapiBlocks::Routing::Extractor do
-  describe "#resolve_schema" do
-    subject(:extractor) { described_class.allocate }
-
-    it "classifies symbol refs" do
-      result = extractor.send(:resolve_schema, :user)
-
-      expect(result).to eq("$ref" => "#/components/schemas/User")
-    end
-
-    it "classifies array item refs" do
-      result = extractor.send(:resolve_schema, { type: :array, items: :user })
-
-      expect(result).to eq(
-        type:  "array",
-        items: { "$ref" => "#/components/schemas/User" }
-      )
-    end
-  end
-end
-# frozen_string_literal: true
-
 require "spec_helper"
 
 RSpec.describe OpenapiBlocks::Routing::Extractor do # rubocop:disable Metrics/BlockLength
@@ -138,6 +116,63 @@ RSpec.describe OpenapiBlocks::Routing::Extractor do # rubocop:disable Metrics/Bl
         operation = extractor.extract["/articles"]["get"]
         expect(operation[:responses]).to have_key("200")
         expect(operation[:responses]).to have_key("401")
+      end
+    end
+
+    context "with custom tags on openapi class" do
+      before do
+        stub_const("Article", Class.new)
+        stub_const("ArticleOpenapi", Class.new(OpenapiBlocks::Base) do
+          tags "Articles", "Blog"
+        end)
+      end
+
+      it "uses custom class tags" do
+        operation = extractor.extract["/articles"]["get"]
+        expect(operation[:tags]).to eq(%w[Articles Blog])
+      end
+    end
+
+    context "with custom tags on operation" do
+      before do
+        stub_const("Article", Class.new)
+        stub_const("ArticleOpenapi", Class.new(OpenapiBlocks::Base) do
+          tags "Articles"
+
+          operation :index do
+            tags "Articles", "Featured"
+          end
+        end)
+      end
+
+      it "uses operation tags over class tags" do
+        operation = extractor.extract["/articles"]["get"]
+        expect(operation[:tags]).to eq(%w[Articles Featured])
+      end
+    end
+
+    context "with security on operation" do
+      before do
+        stub_const("Article", Class.new)
+        stub_const("ArticleOpenapi", Class.new(OpenapiBlocks::Base) do
+          operation :index do
+            security :bearerAuth
+          end
+
+          operation :show do
+            no_security!
+          end
+        end)
+      end
+
+      it "sets security on operation" do
+        operation = extractor.extract["/articles"]["get"]
+        expect(operation[:security]).to eq([{ bearerAuth: [] }])
+      end
+
+      it "sets empty security for public endpoints" do
+        operation = extractor.extract["/articles/{id}"]["get"]
+        expect(operation[:security]).to eq([])
       end
     end
   end

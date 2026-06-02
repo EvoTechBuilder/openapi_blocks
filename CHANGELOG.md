@@ -51,5 +51,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swagger UI served at root of mounted engine (`/docs`)
 - `SpecController#ui` action serving Swagger UI with JSON/YAML spec switcher
 
+### Added
+- RSpec coverage for `OperationBuilder` — summary, description, tags, parameters, responses, security and no_security!
+- RSpec coverage for `Configuration::SecurityBuilder` — bearer_token and api_key schemes
+- RSpec coverage for custom tags per OpenAPI class and per operation
+- RSpec coverage for per-operation security and no_security!
+- Fixed `find_openapi_class` to use `Object.const_get` instead of `ObjectSpace` for reliability
+
 [Unreleased]: https://github.com/evotechbuilder/openapi_blocks/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/evotechbuilder/openapi_blocks/releases/tag/v0.1.0

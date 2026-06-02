@@ -48,4 +48,11 @@ RSpec.describe OpenapiBlocks::Base do # rubocop:disable Metrics/BlockLength
     builder = OpsOpenapi._operations[:index]
     expect(builder._summary).to eq("List")
   end
+
+  it "registers custom tags" do
+    class TaggedOpenapi < OpenapiBlocks::Base; end # rubocop:disable Lint/ConstantDefinitionInBlock
+
+    TaggedOpenapi.tags "Users", "Authentication"
+    expect(TaggedOpenapi._tags).to eq(%w[Users Authentication])
+  end
 end

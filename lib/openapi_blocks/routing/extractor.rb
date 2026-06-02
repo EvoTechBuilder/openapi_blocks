@@ -178,10 +178,9 @@ module OpenapiBlocks
 
       def find_openapi_class(operation)
         openapi_name = "#{operation.schema_name}Openapi"
-
-        ObjectSpace.each_object(Class).find do |klass|
-          klass < OpenapiBlocks::Base && klass.name == openapi_name
-        end
+        Object.const_get(openapi_name)
+      rescue NameError
+        nil
       end
     end
   end
