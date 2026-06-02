@@ -1,32 +1,56 @@
-name: Ruby
+name: CI
 
 on:
   push:
     branches:
       - main
-
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     name: Ruby ${{ matrix.ruby }}
     strategy:
+      fail-fast: false
       matrix:
         ruby:
-          - '4.0.0'
+          - "3.2"
+          - "3.3"
+          - "3.4"
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Set up Ruby
+
+      - name: Set up Ruby ${{ matrix.ruby }}
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-      - name: Run the default task
-        run: bundle exec rake
+          bundler: latest
+
+      - name: Run tests
+        run: bundle exec rspec
+
+  lint:
+    runs-on: ubuntu-latest
+    name: RuboCop
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          bundler: latest
+
+      - name: Run RuboCop
+        run: bundle exec rubocop --parallel
