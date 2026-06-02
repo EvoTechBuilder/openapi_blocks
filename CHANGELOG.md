@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Scalar UI served at `/docs/scalar` alongside Swagger UI
 - `SpecController#scalar` action serving Scalar with `displayRequestDuration` and Ruby `net_http` as default client
+ - `Resource` and `Controller` classes to support serializer-style resources and controller-scoped OpenAPI classes (`lib/openapi_blocks/resource.rb`, `lib/openapi_blocks/controller.rb`)
 
 ### Changed
 - `OpenapiBlocks::Serializer` now uses `class_eval` to compile a monolithic extractor method per serializer class at boot time, eliminating per-object branching and lambda indirection
@@ -17,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Association metadata indexed by name in a `Hash` for O(1) lookup instead of `Array#find` per field per object
 - Association serializer classes resolved at compile time inside `build_assoc_method` instead of per-object via `Object.const_get`
 - Serializer is now **1.86× faster** than the original implementation and **3.6× faster** than `as_json` across 10–5000 records with consistent linear scaling
+ - `Builder#openapi_classes` expanded discovery to include classes ending with `Openapi` that inherit from `OpenapiBlocks::Base` or `OpenapiBlocks::Controller` (enables controller-scoped OpenAPI classes)
+ - `Serializer` now includes virtual attributes and associations marked `read_only` in serialized output (they previously were omitted). This ensures `read_only: true` fields are present in responses/listings while still being excluded from `*Input` schemas.
+ - `Base#infer_model` updated to strip both `Openapi` and `Resource` suffixes when inferring the model class name.
 
 ## [0.2.1] - 2026-06-01
 
