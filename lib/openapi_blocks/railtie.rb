@@ -4,6 +4,12 @@ require "rails"
 
 module OpenapiBlocks
   class Railtie < Rails::Railtie # rubocop:disable Style/Documentation
+    generators do
+      require "generators/openapi_blocks/install/install_generator"
+      require "generators/openapi_blocks/openapi/openapi_generator"
+      require "generators/openapi_blocks/serializer/serializer_generator"
+    end
+
     initializer "openapi_blocks.autoload", before: :set_autoload_paths do |app|
       app.config.eager_load_paths << app.root.join("app/openapi")
       app.config.eager_load_paths << app.root.join("app/serializers")

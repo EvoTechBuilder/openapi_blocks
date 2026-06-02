@@ -1,0 +1,15 @@
+# frozen_string_literal: true
+
+class <%= class_name %>Serializer < OpenapiBlocks::Serializer
+  # model <%= class_name %> is inferred automatically from the class name
+
+  # ignore :password_digest, :reset_password_token
+
+  # association :posts, type: :array, read_only: true
+  # association :company
+
+  # attribute :full_name, type: :string, read_only: true
+  # def full_name
+  #   "#{object.first_name} #{object.last_name}"
+  # end
+end

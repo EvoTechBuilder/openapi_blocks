@@ -1,16 +1,16 @@
 # OpenapiBlocks
 
-OpenapiBlocks é uma gem Rails que gera automaticamente documentação OpenAPI 3.0/3.1 a partir dos seus models ActiveRecord, validações ActiveModel e rotas do Rails — inspirada no [ActiveModel::Serializer](https://github.com/rails-api/active_model_serializers).
+OpenapiBlocks é uma gem Rails que gera automaticamente documentação OpenAPI 3.0/3.1 a partir dos seus models ActiveRecord, validações ActiveModel e rotas do Rails — inspirada no ActiveModel::Serializer (https://github.com/rails-api/active_model_serializers).
 
-English version: [README.md](README.md)
+English version: README.md
 
-Sem anotações manuais. Sem DSL nos controllers. Basta declarar o que expor e a spec é gerada automaticamente. Inclui um serializer de alta performance — ~3.6× mais rápido que `as_json` com escalabilidade linear de 10 a 5000 registros.
+Sem anotações manuais. Sem DSL nos controllers. Basta declarar o que expor e a spec é gerada automaticamente. Inclui um serializer de alta performance — ~3.6× mais rápido que as_json com escalabilidade linear de 10 a 5000 registros.
 
 ---
 
 ## Instalação
 
-Adicione ao seu `Gemfile`:
+Adicione ao seu Gemfile:
 
 ```ruby
 gem "openapi_blocks"
@@ -20,6 +20,70 @@ Depois execute:
 
 ```bash
 bundle install
+```
+
+---
+
+## Generators
+
+O OpenapiBlocks oferece três generators para começar rapidamente.
+
+### Install
+
+```bash
+rails generate openapi_blocks:install
+```
+
+Cria `config/initializers/openapi_blocks.rb` com todas as opções disponíveis comentadas, e monta o engine no `config/routes.rb`:
+
+```ruby
+mount OpenapiBlocks::Engine => "/docs"
+```
+
+### Openapi
+
+```bash
+rails generate openapi_blocks:openapi User
+```
+
+Cria `app/openapi/user_openapi.rb` com todas as opções de DSL disponíveis comentadas:
+
+```ruby
+# app/openapi/user_openapi.rb
+class UserOpenapi < OpenapiBlocks::Controller
+  # resource UserSerializer
+  # controller UsersController
+
+  # tags "Usuários"
+
+  # operation :index do
+  #   summary     "Lista todos os usuários"
+  #   response 200, description: "Lista de usuários", schema: { type: :array, items: :User }
+  # end
+end
+```
+
+### Serializer
+
+```bash
+rails generate openapi_blocks:serializer User
+```
+
+Cria `app/serializers/user_serializer.rb` com todas as opções de DSL disponíveis comentadas:
+
+```ruby
+# app/serializers/user_serializer.rb
+class UserSerializer < OpenapiBlocks::Serializer
+  # ignore :password_digest, :reset_password_token
+
+  # association :posts, type: :array, read_only: true
+  # association :company
+
+  # attribute :full_name, type: :string, read_only: true
+  # def full_name
+  #   "#{object.first_name} #{object.last_name}"
+  # end
+end
 ```
 
 ---
@@ -48,7 +112,7 @@ GET /docs/openapi.yaml  ->  Spec OpenAPI em YAML
 
 ### 2. Configure o initializer
 
-`OpenapiBlocks.configure` é obrigatório. A gem lança `OpenapiBlocks::Error` na primeira requisição se nunca foi chamado ou se `info.title` / `info.version` estiverem em branco.
+OpenapiBlocks.configure é obrigatório. A gem lança OpenapiBlocks::Error na primeira requisição se nunca foi chamado ou se info.title / info.version estiverem em branco.
 
 ```ruby
 # config/initializers/openapi_blocks.rb
@@ -99,11 +163,11 @@ end
 
 ## Uso
 
-OpenapiBlocks oferece duas classes base com responsabilidades distintas:
+O OpenapiBlocks oferece duas classes base com responsabilidades distintas:
 
-- `OpenapiBlocks::Serializer` — define o model, campos, associações e lógica de serialização. Fica em `app/serializers/`.
-- `OpenapiBlocks::Controller` — define operações, parâmetros e respostas para documentação. Fica em `app/openapi/`.
-- `OpenapiBlocks::Base` — classe base legada que combina ambas as responsabilidades. Ainda suportada.
+- OpenapiBlocks::Serializer — define o model, campos, associações e lógica de serialização. Fica em app/serializers/.
+- OpenapiBlocks::Controller — define operações, parâmetros e respostas para documentação. Fica em app/openapi/.
+- OpenapiBlocks::Base — classe base legada que combina ambas as responsabilidades. Ainda suportada.
 
 ### Recomendado: Serializer + Controller
 
@@ -142,7 +206,7 @@ end
 ```ruby
 # app/openapi/user_openapi.rb
 class UserOpenapi < OpenapiBlocks::Controller
-  resource   UserSerializer
+  resource   UserSerializer  # vincula ao serializer — o schema é derivado dele
   controller UsersController
 
   tags "Usuários"
@@ -168,6 +232,19 @@ class UserOpenapi < OpenapiBlocks::Controller
   end
 end
 ```
+
+#### Como o schema OpenAPI é gerado
+
+Quando `resource UserSerializer` é declarado em um `Controller`, o OpenapiBlocks deriva o schema OpenAPI diretamente do serializer — não do model. Isso garante que o que está documentado é exatamente o que a API retorna.
+
+O schema é construído a partir de três fontes no serializer:
+
+- Colunas do ActiveRecord — lidas do `db/schema.rb` via o model inferido. Os tipos das colunas são mapeados para tipos OpenAPI automaticamente.
+- Declarações `attribute` — campos virtuais que não existem no banco. Campos declarados com `read_only: true` aparecem no schema de resposta `User` mas são excluídos do schema de requisição `UserInput`.
+- Declarações `association` — resolvidas como `$ref` para o schema associado. Associações com `read_only: true` aparecem na resposta mas são excluídas do `UserInput`.
+- Declarações `ignore` — colunas excluídas de ambos os schemas.
+
+O schema `UserInput` (usado nos request bodies de POST, PUT e PATCH) é derivado automaticamente do schema `User` removendo `id`, `created_at`, `updated_at` e qualquer campo marcado com `read_only: true`.
 
 ```ruby
 # app/controllers/users_controller.rb
@@ -229,7 +306,7 @@ def show
 end
 ```
 
-O registro do serializer é automático por convenção (`UserSerializer` -> `User`). Para registro explícito:
+O registro do serializer é automático por convenção (UserSerializer -> User). Para registro explícito:
 
 ```ruby
 class AdminUserSerializer < OpenapiBlocks::Serializer
@@ -243,34 +320,34 @@ Se nenhum serializer for encontrado, o OpenapiBlocks usa o comportamento padrão
 
 ## Serializer
 
-O serializer compila um método extrator monolítico por classe no boot usando `class_eval`. Sem loops, sem indireção via lambda e sem branching por objeto em tempo de execução.
+O serializer compila um método extrator monolítico por classe no boot usando class_eval. Sem loops, sem indireção via lambda e sem branching por objeto em tempo de execução.
 
 ### Performance (200 registros, arm64, Ruby 4.0)
 
-| Método     | i/s   | μs/i | vs serialize |
-|------------|-------|------|--------------|
-| serialize  | 4 239 | 235  | —            |
+| Método     | i/s   | us/i | vs serialize     |
+| ---------- | ----- | ---- | ---------------- |
+| serialize  | 4 239 | 235  | —                |
 | to_json    | 1 444 | 692  | 2.94× mais lento |
 | as_json    | 1 186 | 843  | 3.58× mais lento |
 | oj+as_json | 1 126 | 888  | 3.77× mais lento |
 
-A escalabilidade é linear — a vantagem de 3.6× sobre o `as_json` se mantém de 10 a 5000 registros.
+A escalabilidade é linear — a vantagem de 3.6× sobre o as_json se mantém de 10 a 5000 registros.
 
 ### Atributos virtuais e resolução de métodos
 
-| Declarado com          | Método no serializer? | Chama                                   |
-|------------------------|-----------------------|-----------------------------------------|
-| `attribute :full_name` | sim                   | `serializer_instance.full_name`         |
-| `attribute :full_name` | não                   | `object.full_name` (delegado ao model)  |
-| coluna no banco        | —                     | `object.attribute` (direto)             |
+| Declarado com        | Método no serializer? | Chama                                |
+| -------------------- | --------------------- | ------------------------------------ |
+| attribute :full_name | sim                   | serializer_instance.full_name        |
+| attribute :full_name | não                   | object.full_name (delegado ao model) |
+| coluna no banco      | —                     | object.attribute (direto)            |
 
 ### Resolução do serializer de associações
 
 Para cada associação, o serializer resolve a classe na seguinte ordem:
 
-1. `PostSerializer` — tem `serialize`, usado diretamente.
-2. `PostOpenapi` — é um `Controller`, delega para o `_resource`.
-3. Fallback — chama `as_json` no valor da associação.
+1. PostSerializer — tem serialize, usado diretamente.
+2. PostOpenapi — é um Controller, delega para o \_resource.
+3. Fallback — chama as_json no valor da associação.
 
 ---
 
@@ -289,14 +366,14 @@ end
 
 O OpenapiBlocks gera:
 
-- Schema `User` a partir das colunas e tipos do `db/schema.rb`
-- Schema `UserInput` para os request bodies de `POST`, `PUT` e `PATCH` (sem `id`, `created_at`, `updated_at` e campos `read_only`)
-- Campos `required` a partir das validações `presence: true`
-- `minLength`, `maxLength` a partir das validações `length`
-- `minimum`, `maximum` a partir das validações `numericality`
-- `enum` a partir das validações `inclusion`
-- `format: "email"` a partir das validações de formato
-- Todos os paths a partir do `config/routes.rb`
+- Schema User a partir das colunas e tipos do db/schema.rb
+- Schema UserInput para os request bodies de POST, PUT e PATCH (sem id, created_at, updated_at e campos read_only)
+- Campos required a partir das validações presence: true
+- minLength, maxLength a partir das validações length
+- minimum, maximum a partir das validações numericality
+- enum a partir das validações inclusion
+- format: "email" a partir das validações de formato
+- Todos os paths a partir do config/routes.rb
 
 ---
 
@@ -339,10 +416,10 @@ association :posts, type: :array, read_only: true  # excluído do UserInput (som
 
 Atributos virtuais são campos que existem na resposta da API mas não no banco de dados.
 
-| Opção              | Descrição                              | Aparece em User | Aparece em UserInput |
-|--------------------|----------------------------------------|:---------------:|:--------------------:|
-| `read_only: true`  | Campos calculados ou gerados pelo sistema |    SIM       |        NÃO           |
-| `read_only: false` | Campos que o cliente pode enviar e receber | SIM         |        SIM           |
+| Opção            | Descrição                                  | Aparece em User | Aparece em UserInput |
+| ---------------- | ------------------------------------------ | :-------------: | :------------------: |
+| read_only: true  | Campos calculados ou gerados pelo sistema  |       SIM       |         NÃO          |
+| read_only: false | Campos que o cliente pode enviar e receber |       SIM       |         SIM          |
 
 ```ruby
 attribute :full_name,    type: :string, read_only: true  # somente resposta
@@ -354,19 +431,19 @@ attribute :nickname,     type: :string                   # requisição e respos
 
 ## Mapeamento de Tipos
 
-| Tipo ActiveRecord | Tipo OpenAPI           |
-|-------------------|------------------------|
-| `integer`         | `integer` / `int32`    |
-| `bigint`          | `integer` / `int64`    |
-| `float`           | `number` / `float`     |
-| `decimal`         | `number` / `double`    |
-| `string`          | `string`               |
-| `text`            | `string`               |
-| `boolean`         | `boolean`              |
-| `date`            | `string` / `date`      |
-| `datetime`        | `string` / `date-time` |
-| `uuid`            | `string` / `uuid`      |
-| `json` / `jsonb`  | `object`               |
+| Tipo ActiveRecord | Tipo OpenAPI       |
+| ----------------- | ------------------ |
+| integer           | integer / int32    |
+| bigint            | integer / int64    |
+| float             | number / float     |
+| decimal           | number / double    |
+| string            | string             |
+| text              | string             |
+| boolean           | boolean            |
+| date              | string / date      |
+| datetime          | string / date-time |
+| uuid              | string / uuid      |
+| json / jsonb      | object             |
 
 ---
 
@@ -382,7 +459,7 @@ config/routes.rb
 db/schema.rb
 ```
 
-A spec é regenerada automaticamente na próxima requisição a `/docs/openapi.json` sempre que algum desses arquivos for alterado. Sem precisar reiniciar o servidor.
+A spec é regenerada automaticamente na próxima requisição a /docs/openapi.json sempre que algum desses arquivos for alterado. Sem precisar reiniciar o servidor.
 
 ---
 
@@ -395,4 +472,4 @@ A spec é regenerada automaticamente na próxima requisição a `/docs/openapi.j
 
 ## Licença
 
-[MIT](LICENSE.txt)
+MIT (LICENSE.txt)

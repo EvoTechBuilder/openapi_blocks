@@ -1,0 +1,48 @@
+# frozen_string_literal: true
+
+class <%= class_name %>Openapi < OpenapiBlocks::Controller
+  # resource <%= class_name %>Serializer
+  # controller <%= class_name %>Controller
+
+  # tags "<%= class_name.pluralize %>"
+
+  # operation :index do
+  #   summary     "List all <%= class_name.pluralize.downcase %>"
+  #   description "Returns a paginated list of <%= class_name.pluralize.downcase %>"
+  #
+  #   parameter :page,     in: :query, type: :integer, description: "Page number"
+  #   parameter :per_page, in: :query, type: :integer, description: "Items per page"
+  #
+  #   response 200, description: "List of <%= class_name.pluralize.downcase %>", schema: { type: :array, items: :<%= class_name %> }
+  #   response 401, description: "Unauthorized"
+  # end
+
+  # operation :show do
+  #   summary "Get a <%= class_name.downcase %>"
+  #
+  #   response 200, description: "<%= class_name %> found",     schema: :<%= class_name %>
+  #   response 404, description: "<%= class_name %> not found"
+  # end
+
+  # operation :create do
+  #   summary "Create a <%= class_name.downcase %>"
+  #
+  #   response 201, description: "<%= class_name %> created", schema: :<%= class_name %>
+  #   response 422, description: "Invalid data"
+  # end
+
+  # operation :update do
+  #   summary "Update a <%= class_name.downcase %>"
+  #
+  #   response 200, description: "<%= class_name %> updated",     schema: :<%= class_name %>
+  #   response 404, description: "<%= class_name %> not found"
+  #   response 422, description: "Invalid data"
+  # end
+
+  # operation :destroy do
+  #   summary "Delete a <%= class_name.downcase %>"
+  #
+  #   response 200, description: "<%= class_name %> deleted"
+  #   response 404, description: "<%= class_name %> not found"
+  # end
+end

@@ -1,0 +1,36 @@
+# frozen_string_literal: true
+
+OpenapiBlocks.configure do |config|
+  # config.openapi_version = "3.1.0"  # required — "3.0.3" or "3.1.0"
+
+  # config.auto_serialize = true  # default is false
+
+  config.info do
+    title       "My API"  # required
+    version     "1.0.0"   # required
+    description "API documentation generated automatically"
+
+    # contact do
+    #   name  "My Team"
+    #   email "api@mycompany.com"
+    #   url   "https://mycompany.com"
+    # end
+
+    # license do
+    #   name "MIT"
+    #   url  "https://opensource.org/licenses/MIT"
+    # end
+  end
+
+  # config.servers do
+  #   server do
+  #     url         "http://localhost:3000"
+  #     description "Development"
+  #   end
+  # end
+
+  # config.security do
+  #   bearer_token format: "JWT"                   # Authorization: Bearer <token>
+  #   api_key      name: "X-API-Key", in: :header  # X-API-Key: <key>
+  # end
+end
