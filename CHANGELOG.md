@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `association` DSL now uses `read_only: true` instead of `input: false` for consistency with `attribute` DSL
+
 ## [0.2.0] - 2026-06-01
 
 ### Added
