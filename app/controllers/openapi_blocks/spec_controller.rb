@@ -3,7 +3,7 @@
 require "action_controller/api"
 
 module OpenapiBlocks
-  class SpecController < ActionController::API # rubocop:disable Style/Documentation
+  class SpecController < ActionController::API # rubocop:disable Style/Documentation,Metrics/ClassLength
     SWAGGER_UI_CSS             = "https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css"
     SWAGGER_UI_STANDALONE_JS   = "https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js"
     SWAGGER_UI_JS              = "https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"
@@ -30,7 +30,7 @@ module OpenapiBlocks
 
     private
 
-    def scalar_html
+    def scalar_html # rubocop:disable Metrics/MethodLength
       spec_url = "#{swagger_spec_base_url}.json"
       title    = "#{OpenapiBlocks.configuration.info.title} - Scalar"
 

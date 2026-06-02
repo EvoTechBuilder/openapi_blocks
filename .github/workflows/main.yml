@@ -53,4 +53,4 @@ jobs:
           bundler: latest
 
       - name: Run RuboCop
-        run: bundle exec rubocop --parallel
+        run: bundle exec rubocop
