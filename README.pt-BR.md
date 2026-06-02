@@ -161,6 +161,7 @@ end
 # app/openapi/user_openapi.rb
 class UserOpenapi < OpenapiBlocks::Controller
   resource UserResource
+  controller UsersController
 
   tags "Users"
 
