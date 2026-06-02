@@ -310,7 +310,7 @@ class UserOpenapi < OpenapiBlocks::Base
 
       # associações opt-in
       association :company
-      association :posts, type: :array, input: false  # excluído do UserInput
+      association :posts, type: :array, read_only: true  # excluído do UserInput
 
       # atributos virtuais (não existem no banco de dados)
       # read_only: true  ->  exposto apenas na resposta (User)
@@ -427,7 +427,7 @@ class UserOpenapi < OpenapiBlocks::Base
     ```ruby
     association :company                             # belongs_to — $ref para Company schema
     association :posts, type: :array                 # has_many — array de $ref para Post schema
-    association :posts, type: :array, input: false   # excluído do UserInput (response only)
+    association :posts, type: :array, read_only: true   # excluído do UserInput (response only)
     ```
 
     ---
