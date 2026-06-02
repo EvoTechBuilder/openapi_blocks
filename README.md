@@ -51,8 +51,8 @@ end
 This exposes:
 
 ```
-GET /docs               ->  Swagger UI
-GET /docs/scalar        ->  Scalar UI
+GET /docs               ->  Scalar UI
+GET /docs/swagger       ->  Swagger UI
 GET /docs/openapi.json  ->  OpenAPI spec in JSON
 GET /docs/openapi.yaml  ->  OpenAPI spec in YAML
 ```

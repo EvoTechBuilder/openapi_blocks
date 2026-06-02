@@ -62,10 +62,10 @@ end
 Isso expõe:
 
 ```
-GET /docs               ->  Swagger UI
-GET /docs/scalar        ->  Scalar UI
-GET /docs/openapi.json  ->  OpenAPI spec em JSON
-GET /docs/openapi.yaml  ->  OpenAPI spec em YAML
+GET /docs               ->  Scalar UI
+GET /docs/swagger       ->  Swagger UI
+GET /docs/openapi.json  ->  OpenAPI spec in JSON
+GET /docs/openapi.yaml  ->  OpenAPI spec in YAML
 ```
 
 ### 2. Configure o initializer
