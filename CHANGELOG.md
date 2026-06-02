@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-02
+
 ### Added
 
 - `OpenapiBlocks::Serializer` base class for standalone serializers in `app/serializers/` — infers model from class name (e.g. `UserSerializer` -> `User`)
