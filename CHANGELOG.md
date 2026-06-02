@@ -37,6 +37,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - RSpec coverage for `Schema::Types`, `Schema::Validator`, `Schema::Extractor`, `Routing::Extractor`, `Spec::Components` and `Configuration`
 - Validation for `openapi_version` — raises `ArgumentError` for unsupported versions
 - `read_only: true` virtual attributes excluded from `UserInput` schema
+- `OpenapiBlocks::Configuration::SecurityBuilder` with `bearer_token` and `api_key` DSL
+- Global `security` configuration in initializer
+- Per-operation `security` and `no_security!` DSL in `OperationBuilder`
+- `securitySchemes` generated automatically in `components`
+- `tags` array generated at document root level from paths
+- `association` DSL now supports `input: false` to exclude from `UserInput`
+- Associations excluded from `required` fields automatically
+- `resolve_schema` now classifies symbol references (`:user` → `User`)
 
 [Unreleased]: https://github.com/evotechbuilder/openapi_blocks/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/evotechbuilder/openapi_blocks/releases/tag/v0.1.0
