@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `OpenapiBlocks::Serializer` base class for standalone serializers in `app/serializers/` — infers model from class name (e.g. `UserSerializer` → `User`)
+- `OpenapiBlocks::Concerns::Schemable` module extracted from `Base` — provides `model`, `ignore`, `association`, `attribute` DSL
+- `OpenapiBlocks::Concerns::Documentable` module extracted from `Base` — provides `operation`, `tags` DSL
+- `OpenapiBlocks::Serialization` module extracted from `Serializer` — internal serialization engine shared by `Base`, `Serializer`
+- `Configuration#configured?` flag — set to `true` when `config.info` or `config.openapi_version=` is called explicitly
+- `Builder#validate_configuration!` — raises `OpenapiBlocks::Error` with a descriptive message if `configure` was never called or `info.title`/`info.version` are blank
+
+### Changed
+- `OpenapiBlocks::Resource` removed — replaced by `OpenapiBlocks::Serializer` (`app/serializers/user_serializer.rb`)
+- `OpenapiBlocks::Serialization` loops now stop at `serialization_sentinel` instead of hardcoded `OpenapiBlocks::Base`, allowing `Serializer` subclasses to traverse their own hierarchy correctly
+- `resolve_assoc_serializer` lookup order updated: `PostSerializer` → `PostOpenapi` (delegates to `_resource` if Controller)
+- `Spec::Components#build` extracts model via `resolve_schema_klass` — resolves `_resource` from `Controller` before building schema, supports `Serializer` as resource
+- `Base` now includes `Concerns::Schemable` and `Concerns::Documentable` instead of defining DSL methods directly — no behavioral change for existing users
+
+### Removed
+- `lib/openapi_blocks/resource.rb` — `OpenapiBlocks::Resource` is no longer part of the public API
+
 ## [0.3.1] - 2026-06-02
 
 ### Changed

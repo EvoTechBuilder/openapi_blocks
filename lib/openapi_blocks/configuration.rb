@@ -17,6 +17,11 @@ module OpenapiBlocks
       @info            = InfoBuilder.new
       @servers         = []
       @security        = nil
+      @configured      = false
+    end
+
+    def configured?
+      @configured
     end
 
     def openapi_version=(version)
@@ -29,6 +34,7 @@ module OpenapiBlocks
     end
 
     def info(&block)
+      @configured = true if block
       @info.instance_eval(&block) if block
       @info
     end

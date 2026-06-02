@@ -16,15 +16,17 @@ module OpenapiBlocks
         schemas = @openapi_classes.each_with_object({}) do |klass, hash|
           schema_klass = klass.respond_to?(:_resource) && klass._resource ? klass._resource : klass
 
-          begin
-            next unless schema_klass.model
+          model = begin
+            schema_klass.model
           rescue StandardError
             next
           end
 
-          schema_name = schema_klass.model.name
+          next unless model
+
+          schema_name = model.name
           extractor   = Schema::Extractor.new(schema_klass)
-          validator   = Schema::Validator.new(schema_klass.model)
+          validator   = Schema::Validator.new(model)
 
           schema              = extractor.extract
           schema[:properties] = merge_validations(schema[:properties], validator.extract)
