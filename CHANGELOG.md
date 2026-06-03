@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Change description in gemspec
+
 ## [0.6.0] - 2026-06-03
 
 - `OpenapiBlocks::Serializer` optmize serialization using frozen string constants as hash keys to reduce object allocations

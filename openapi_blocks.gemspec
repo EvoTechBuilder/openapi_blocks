@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email = ["caio.francelinosena@gmail.com"]
 
   spec.summary = "OpenAPI 3.0/3.1 documentation and high-performance serializer for Rails"
-  spec.description = "Generates OpenAPI specs automatically from ActiveRecord models, ActiveModel validations and Rails routes. Includes a built-in serializer ~3.6x faster than as_json, Scalar and Swagger UI out of the box, and optional auto-serialization via render json:. Inspired by ActiveModel::Serializer." # rubocop:disable Layout/LineLength
+  spec.description = "OpenAPI-first Rails library that generates full 3.0/3.1 specifications directly from models, validations, and controllers. Automatically builds request and response schemas, including input/output models, while providing a fast built-in serializer and optional adapters for Blueprinter and other serializers. Designed to eliminate duplication between API code and documentation." # rubocop:disable Layout/LineLength
   spec.homepage = "https://github.com/evotechbuilder/openapi_blocks"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
