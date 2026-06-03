@@ -30,7 +30,7 @@ module OpenapiBlocks
 
       private
 
-      def build_compiled_extractor # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+      def build_compiled_extractor # rubocop:disable Metrics/AbcSize,Metrics/MethodLength,Metrics/CyclomaticComplexity,Metrics/PerceivedComplexity
         classified = classify_fields
         classified[:association].each { |field| build_assoc_method(field) }
 
@@ -41,13 +41,13 @@ module OpenapiBlocks
         end
 
         model_lines = classified[:model].map do |f|
-          %(#{name}::KEY_#{f.upcase} => object.public_send(#{name}::KEY_#{f.upcase}))
+          %(#{name}::KEY_#{f.upcase} => object.#{f})
         end
         delegated_lines = classified[:delegated].map do |f|
-          %(#{name}::KEY_#{f.upcase} => object.public_send(#{name}::KEY_#{f.upcase}))
+          %(#{name}::KEY_#{f.upcase} => object.#{f})
         end
         virtual_lines = classified[:virtual].map do |f|
-          %(#{name}::KEY_#{f.upcase} => inst.public_send(#{name}::KEY_#{f.upcase}))
+          %(#{name}::KEY_#{f.upcase} => inst.#{f})
         end
         assoc_lines = classified[:association].map do |f|
           %(#{name}::KEY_#{f.upcase} => _serialize_assoc_#{f}(object))
@@ -97,7 +97,7 @@ module OpenapiBlocks
             def self._serialize_assoc_#{field}(object)
               val = object.public_send(:#{assoc_name})
               return nil if val.nil?
-              val.map { |v| #{serializer}.serialize(v) }
+              #{serializer}.serialize(val)
             end
           RUBY
         else

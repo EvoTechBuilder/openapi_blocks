@@ -324,14 +324,21 @@ The built-in serializer compiles a monolithic extractor method per class at boot
 
 ### Performance (200 records, arm64, Ruby 4.0)
 
-| Method     | i/s   | us/i | vs serialize |
-| ---------- | ----- | ---- | ------------ |
-| serialize  | 4 239 | 235  | —            |
-| to_json    | 1 444 | 692  | 2.94x slower |
-| as_json    | 1 186 | 843  | 3.58x slower |
-| oj+as_json | 1 126 | 888  | 3.77x slower |
+| Method     | i/s   | μs/i | vs serialize |
+|------------|-------|------|--------------|
+| serialize  | 4 504 | 198  | —            |
+| to_json    | 1 444 | 692  | 2.89x slower |
+| as_json    | 1 179 | 453  | 2.81x slower |
+| oj+as_json | 1 126 | 572  | 2.89x slower |
+| AMS        |   559 | 178  | 9.02x slower |
 
-Scaling is linear — the 3.6x advantage over as_json holds from 10 to 5000 records.
+Scaling is linear — the 2.81x advantage over as_json holds from 10 to 5000 records.
+
+### Memory Allocation
+
+OpenapiBlocks:  20MB / 225k objects  — fastest and lowest memory
+as_json:       116MB / 1.2M objects  — 2.81x slower, 5.6x more memory
+AMS:           260MB / 2.7M objects  — 9x slower,   13x more memory
 
 ### Virtual attributes and method resolution
 
