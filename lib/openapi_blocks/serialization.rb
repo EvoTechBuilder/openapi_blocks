@@ -32,15 +32,26 @@ module OpenapiBlocks
 
       def build_compiled_extractor # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
         classified = classify_fields
+        classified[:association].each { |field| build_assoc_method(field) }
 
-        model_lines = classified[:model].map { |f| %("#{f}" => object.public_send("#{f}")) }
-        virtual_lines   = classified[:virtual].map   { |f| %("#{f}" => inst.public_send("#{f}")) }
-        delegated_lines = classified[:delegated].map { |f| %("#{f}" => object.public_send("#{f}")) }
-        assoc_lines     = classified[:association].map do |f|
-          %("#{f}" => _serialize_assoc_#{f}(object))
+        all_fields = classified.values.flatten
+        all_fields.each do |f|
+          const_name = "KEY_#{f.upcase}"
+          const_set(const_name, f.freeze) unless const_defined?(const_name)
         end
 
-        classified[:association].each { |field| build_assoc_method(field) }
+        model_lines = classified[:model].map do |f|
+          %(#{name}::KEY_#{f.upcase} => object.public_send(#{name}::KEY_#{f.upcase}))
+        end
+        delegated_lines = classified[:delegated].map do |f|
+          %(#{name}::KEY_#{f.upcase} => object.public_send(#{name}::KEY_#{f.upcase}))
+        end
+        virtual_lines = classified[:virtual].map do |f|
+          %(#{name}::KEY_#{f.upcase} => inst.public_send(#{name}::KEY_#{f.upcase}))
+        end
+        assoc_lines = classified[:association].map do |f|
+          %(#{name}::KEY_#{f.upcase} => _serialize_assoc_#{f}(object))
+        end
 
         all_lines = (model_lines + delegated_lines + virtual_lines + assoc_lines).join(",\n        ")
 
